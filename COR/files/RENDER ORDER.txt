@@ -1,0 +1,43 @@
+function renderOrder() {
+    const list = document.getElementById('orderList');
+    if(!list) return;
+
+    let total = 0;
+
+    const counts = {};
+    currentOrder.forEach(it => {
+        if (!counts[it.n]) {
+            counts[it.n] = { qty: 0, price: it.p, printed: it.printed };
+        }
+        counts[it.n].qty += 1;
+    });
+
+    let html = "";
+
+    for (let name in counts) {
+        let item = counts[name];
+        total += item.qty * item.price;
+
+        let style = item.printed 
+            ? "color:#000; font-weight:normal;" 
+            : "color:red; font-weight:bold;";
+
+        html += `
+        <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; ${style}">
+            <span>${item.qty} x ${name}</span>
+            <span>
+                ${(item.qty * item.price).toFixed(2)}€
+                <b onclick="removeOne('${name.replace(/'/g, "\\'")}')" 
+                   style="color:#dc3545; padding-left:10px; cursor:pointer;">
+                   ✖
+                </b>
+            </span>
+        </div>`;
+    }
+
+    list.innerHTML = html;
+
+    document.getElementById('totalBox').innerText = total.toFixed(2) + "€";
+    document.getElementById('tableTitle').innerText = selectedTable;
+    list.scrollTop = list.scrollHeight;
+}

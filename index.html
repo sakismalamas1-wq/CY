@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="icon" type="image/png" href="sfx.png">
+    
+    <title>POS-CY v 2.6 "Copyright © 2026 Sakis Malamas¨</title>
+    
+    <style>
+        /* Στυλ για τα κουτιά Delivery */
+        .del-input {
+            width: 100%;
+            background: #f5f1f1 !important;
+            color: #010101 !important;
+            border: 1px solid #9b9d9e !important;
+            padding: 6px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .del-input::placeholder { color: #716f6f; }
+        .del-input:focus {
+            border-color: #fff !important;
+            box-shadow: 0 0 10px #4a4a4a;
+            outline: none;
+        }
+        :root {
+            --gbr-cyan: #9fa4a4;
+            --gbr-dark: #090909;
+            --gbr-bg: #0f0e0e;
+            --gbr-panel: #0a0a0a;
+            --gbr-order-new: #d62225; 
+            --gbr-order-active: #b362f5; 
+            --neon-border: 4px solid #4e4f4f; 
+        }
+
+        body { 
+            background: #404040; 
+            color: #fbfcfb;  
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; padding: 5px; height: 100vh; overflow: hidden;
+            border: var(--neon-border);
+            box-shadow: inset 0 0 30px rgba(94, 95, 95, 0.6), 0 0 20px #4e4f4f; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        /* ΝΕΟ TOP BAR */
+        .top-bar {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 4px;
+            background: #0a0a0a;
+            border: 1px solid var(--gbr-cyan);
+            border-radius: 10px;
+            padding: 5px;
+            box-shadow: 0 5px 15px rgba(252, 251, 251, 0.3);
+        }
+
+        .top-bar-btn {
+            background: #080808;
+            color: #00eaff;
+            border: 1px solid #4e4f4f;
+            padding: 10px 2px;
+            font-weight: 1000;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 3px 0 #6b6c6c;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .top-bar-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #03f5f5;
+        }
+        
+        .top-bar-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #03e1f5;
+        }
+        .top-bar-btn:hover {
+            transform: translateY(-4px);
+            background: #f7c203;
+            box-shadow: 0 8px 20px rgba(200, 212, 236, 0.25);
+            color: #0b0b0b
+        }
+
+        .top-bar-clock {
+            background: #000;
+            color: #ff4444;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-weight: 900;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 1px;
+        }
+
+        .main-wrapper { 
+            display: grid; 
+            grid-template-columns: 360px 350px 1fr; 
+            gap: 10px; 
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .sidebar-left, .order-center, .menu-right { 
+            background: #0a0a0a; 
+            border-radius: 10px; 
+            border: 2px solid var(--gbr-cyan);
+            padding: 1px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 5px 15px rgba(252, 251, 251, 0.9);
+            overflow: hidden;
+        }
+
+        
+        .tables-display { 
+            flex-grow: 1; display: grid; grid-template-columns: repeat(4, 1fr); 
+            gap: 4px; overflow-y: auto; padding: 0; align-content: start;
+        }
+
+        .btn-table {
+            background: linear-gradient(to bottom, #131313, #2a2a2a);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 3px solid #bfbbbb;
+            color: #fff; 
+            box-shadow: 0 8px 20px #c3c4c6f9;
+            border-radius: 10px; 
+            height: 50px; 
+            font-weight: bold; 
+            font-size: 20px; cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease; 
+        }
+        .btn-table:hover {
+            transform: translateY(-4px);
+            background: #f7c203;
+            box-shadow: 0 8px 20px #c8d4ecf9;
+            color: #0b0b0b
+        }
+        .table-has-order { 
+            background: rgba(134, 76, 243, 0.861) !important; 
+            border-color: rgba(110, 66, 193, 0.991) !important;
+            color: #fff !important; 
+        }
+        .table-has-order:hover {
+            background: rgba(111, 66, 193, 0.6) !important;
+            box-shadow: 0 8px 20px rgba(111, 66, 193, 0.5) !important;
+        }
+
+        .nav-controls { display: flex; flex-direction: column; gap: 5px; align-items: center; margin-top: 2px; }
+        .w-360 { width: 350px; padding: 6px; font-size: 18px; }
+        .w-350 { width: 340px; padding: 6px; font-size: 18px; }
+        .split-row { display: flex; gap: 1px; width: 360px; }
+        
+
+        .orange-btn { 
+            background: linear-gradient(to bottom, #2a2a2a, #2a2a2a); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 4px solid rgba(243, 152, 4, 0.993);
+            color: #f9f7f5; height: 50px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; 
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+        .orange-btn:hover {
+            transform: translateY(-4px);
+            background: rgba(247, 157, 12, 0.999);
+            box-shadow: 0 8px 20px rgba(247, 157, 12, 0.4);
+        }
+
+        .blue-btn { 
+            background: #2a2a2a; 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 4px solid rgba(8, 0, 255, 0.994);
+            color: #f4f5f8; height: 50px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; 
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+        .blue-btn:hover {
+            transform: translateY(-4px);
+            background: #007bfffe;
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
+        }
+
+        .red-btn { 
+            background: #2a2a2a; 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 4px solid rgb(246, 3, 3);
+            color: #f8f4f4; height: 35px; font-weight: bold; border-radius: 10px; cursor: pointer; 
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+        .red-btn:hover {
+            transform: translateY(-3px);
+            background: rgb(246, 23, 3);
+            box-shadow: 0 6px 15px rgba(246, 23, 3, 0.4);
+        }
+
+        #tableTitle { text-align: center; font-weight: 900; font-size: 24px; margin: 5px 0; }
+        #orderList { 
+            flex-grow: 1; background: #fff; color: #0a0a0a; border-radius: 5px; 
+            padding: 10px; overflow-y: scroll; font-weight: 900; 
+        }
+        #orderList::-webkit-scrollbar { width: 15px; }
+        #orderList::-webkit-scrollbar-thumb { background: #4e4f4f;  border-radius: 10px; }
+
+        #totalBox { 
+            background: #080808;  color: #07def5;  
+            border: 3px solid var(--gbr-cyan); font-size: 32px; font-weight: 900;
+            text-align: center; margin-top: 10px; padding: 5px;
+        }
+
+        /* ΑΛΛΑΓΗ ΔΙΑΤΑΞΗΣ: ΠΡΟΪΟΝΤΑ ΑΡΙΣΤΕΡΑ - ΚΑΤΗΓΟΡΙΕΣ ΔΕΞΙΑ */
+        .menu-wrapper { 
+    display: grid; 
+    grid-template-columns: 1fr 150px; /* Το 1fr (προϊόντα) πάει αριστερά και το 160px (κατηγορίες) πάει δεξιά */
+    gap: 2px; 
+    height: 100%; 
+}
+#menuProducts { 
+    order: 1; /* Αναγκάζει τα προϊόντα να εμφανίζονται πρώτα (αριστερά) */
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr) !important; 
+    grid-auto-rows: 70px; 
+    gap: 1px; 
+    overflow-y: auto; 
+    align-content: start; 
+    box-shadow: 0 8px 20px #c8d4ecf9;
+}
+        #menuCategories { 
+    order: 2; /* Αναγκάζει τις κατηγορίες να εμφανίζονται δεύτερες (δεξιά) */
+    display: flex; 
+    flex-direction: column; 
+    gap: 2px; 
+    overflow-y: auto; 
+}
+        
+        .btn-cat { 
+            background: linear-gradient(to bottom, #131313, #2a2a2a); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 3px solid #bfbbbb;   
+            color: #00eaff; 
+            font-size:14px; 
+            padding: 15px 5px; 
+            border-radius: 10px; 
+            font-weight: bold; cursor: pointer; 
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            box-shadow: 0 8px 20px #b5b6b8f9;
+        }
+        .btn-cat:hover {
+            transform: translateY(-3px);
+            background: #f7c203;
+            box-shadow: 0 6px 15px rgba(247, 157, 12, 0.25);
+            color: #000
+        }
+        .btn-cat.active { 
+            background: rgba(200, 212, 236, 0.8); 
+            color: #000; 
+            border-color: #c8d4ec;
+            transform: none !important;
+            box-shadow: #fa0202
+        }
+
+        #menuProducts { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            grid-auto-rows: 70px; 
+            gap: 2px; 
+            overflow-y: auto; 
+            align-content: start; 
+        }
+
+        .btn-prod { 
+            background: linear-gradient(to bottom, #131313, #2a2a2a); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 3px solid #bfbbbb;   
+            color: rgb(245, 248, 245); 
+            font-size:14px; 
+            padding: 15px 5px; 
+            border-radius: 10px; 
+            font-weight: bold; cursor: pointer; 
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            box-shadow: 8px 8px 8px #d5d4d2f9;
+        }
+        .btn-prod:hover { 
+            background: #f7c203;
+            border-color: rgba(200, 212, 236, 0.6);
+            transform: translateY(-4px); 
+            box-shadow: 0 8px 20px rgba(200, 212, 236, 0.25); 
+            color: #0b0b0b
+        }
+        .btn-prod:active { transform: translateY(0); }
+
+        .table-has-order { background: var(--gbr-order-active) !important; color: #ffff00; }
+        .pulsing-red { 
+            background: var(--gbr-order-new) !important; color: rgb(5, 5, 5);
+            animation: pulse-gbr 0.6s infinite alternate; 
+        }
+        @keyframes pulse-gbr { from { opacity: 1; } to { opacity: 0.7; } }
+
+        .hidden { display: none !important; }
+
+        @media screen and (min-width: 1000px) {
+    .modal-content, #extrasModal, .options-panel { 
+        /* Κρατάμε με !important ΜΟΝΟ το απόλυτο κεντράρισμα στην οθόνη */
+        position: fixed !important;
+        top: 50% !important; 
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 600px !important;
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+    .extra-item-btn, .option-button, .modifier-btn {
+        font-size: 30px; 
+        padding: 60px; 
+        margin: 60px; 
+        min-width: 250px; 
+    }
+    .modal-content h3 {
+        font-size: 30px; 
+        text-align: center;
+        border-bottom: 20px solid #a7abac;
+    }
+}
+
+#extrasList button {
+    background: #c3c2c5;
+    border: 4px solid #9507f3;
+    font-size: 18px;    
+    padding: 4px 10px; 
+    margin: 1px;        
+    min-height: 50px;   
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+/* Όταν το κουμπί επιλέγεται, αλλάζει φόντο και χρώμα γραμμάτων */
+#extrasList button.selected-extra {
+    background: #ed3b05; /* οταν πατας το κουμπι στα εξτρας */
+    color: #000000;      /* Μαύρα γράμματα για να κάνει αντίθεση */
+    border-color: #666868;
+}
+#extrasList button:hover {
+            transform: translateY(-3px);
+            background: #f7c203;
+            box-shadow: 0 6px 15px rgba(247, 157, 12, 0.25);
+            color: #000
+        }
+
+#extrasModal button:last-child {
+    padding: 16px 1px;
+    font-size: 18px;
+    margin-top: 5px;
+}
+
+#keyboardWrapper {
+    display: none; 
+    position: fixed; 
+    z-index: 11000; 
+    background: #1a1a1a; 
+    border-top: 4px solid #727474; /* Καρφωτό χρώμα, ανεξάρτητο από το admin */
+    width: 1300px; 
+    height: 350px; 
+    bottom: 0; 
+    left: 0;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.8); 
+    touch-action: none; 
+}
+
+.kb-container {
+    display: grid;
+    grid-template-columns: 1fr 350px; 
+}
+    </style>
+</head>
+<body>
+<!-- ΝΕΟ TOP BAR ΜΕ 9 ΣΤΟΙΧΕΙΑ -->
+<div class="top-bar">
+    <button class="top-bar-btn" onclick="showSalon()">🍽️Σ Α Λ Ο Ν Ι</button>
+    <button class="top-bar-btn" onclick="showDelivery()">🚲DELIVERY</button>
+	<button class="top-bar-btn" onclick="window.location.href='ico.html'">ΔΙΑΝΟΜΕΑΣ</button>
+    <div class="top-bar-clock" id="posClock">00:00:00</div>
+    <button class="top-bar-btn" onclick="window.location.href='web/dashboard.html'">🌐 WEB</button>
+    <button class="top-bar-btn" onclick="window.open('control_panel.php', '_blank')">📊 Control</button>
+    <button class="top-bar-btn" onclick="window.location.href='ico3.html'">🔒CODECS</button>
+    <button class="top-bar-btn" onclick="openSecureCashier()" class="header-btn">🏦 ΤΑΜΕΙΟ</button>
+    <button class="top-bar-btn" onclick="window.location.href='admin.html'">⚙ ADMIN</button>
+</div>
+
+<div class="main-wrapper">
+    <div class="sidebar-left">
+        <div class="toggle-container">
+            
+        </div>
+
+        <div id="salonView" class="tables-display"></div>
+
+        <div id="deliveryView" class="hidden" style="display: flex; flex-direction: column; flex-grow: 1;">
+            <div id="deliveryFields" style="background: #706e6e; border: 2px solid #070707; padding: 8px; margin: 5px; border-radius: 10px; width: 360px; box-sizing: border-box;">
+                <h3 style="color:#08f6f6; margin: 0 0 5px 0; font-size:13px; text-align: center;">📍 ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</h3>
+                <input type="text" id="delPhone" placeholder="1. ΤΗΛΕΦΩΝΟ" class="del-input" style="margin-bottom: 5px; padding: 8px;" onkeydown="if(event.key==='Enter') findCustomer(this.value)">
+                <input type="text" id="delName" placeholder="2. ΟΝΟΜΑ" class="del-input" style="margin-bottom: 5px; padding: 8px;">
+                <input type="text" id="delAddress" placeholder="3. ΔΙΕΥΘΥΝΣΗ" class="del-input" style="margin-bottom: 5px; padding: 8px;">
+                <input type="text" id="delFloor" placeholder="4. ΟΡΟΦΟΣ" class="del-input" style="margin-bottom: 5px; padding: 8px;">
+                <input type="text" id="delNotes" placeholder="5. ΣΧΟΛΙΑ" class="del-input" style="margin-bottom: 8px; padding: 8px;">
+                <button class="btn-nav-gbr" onclick="saveDeliveryData()" style="width: 100%; background: #f2be04; color: #0e0d0d; padding: 10px; font-size: 18px; border: none;">🚀 ΕΝΑΡΞΗ DELIVERY</button>
+            </div>
+            <div id="deliveryTables" class="tables-display" style="display: grid; flex-grow: 1;"></div>
+        </div>
+
+        <div class="nav-controls">
+            <button class="orange-btn w-360" onclick="printToKitchen()">👨‍🍳  ΚΟΥΖΙΝΑ</button>
+            <button class="blue-btn w-360" onclick="printFinalBill()">💰  ΣΥΝΟΛΟ</button>
+            <button class="red-btn w-360" onclick="clearCurrentOrder()">❌  ΑΚΥΡΩΣΗ</button>
+            <div class="split-row">
+            </div>
+        </div>
+    </div>
+
+    <div class="order-center">
+	    <div style="background:#000; color:#0f0; text-align:center; padding:5px; font-weight:bold;">
+    <img src="logo.png" alt="LOGO" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+</div>
+        <div id="tableTitle">ΕΠΙΛΕΞΤΕ</div>
+        <div id="orderList"></div>
+        <div id="totalBox">0.00€</div>
+    </div>
+
+    <div class="menu-right">
+        <div class="menu-wrapper">
+            <div id="menuCategories"></div>
+            <div id="menuProducts"></div>
+        </div>
+    </div>
+</div>
+
+<div id="extrasModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <div class="sidebar-left" style="width:500px; border:10px solid var(--gbr-cyan); background:#000;">
+        <h2 id="modalProdName" style="text-align:center;">EXTRAS</h2>
+        <div id="extrasList" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:40px 0;"></div>
+        <button class="btn-nav-gbr w-360" onclick="confirmExtras()" style="background:#02f60b; color:#000; padding:10px; border:none; margin: 0 auto; display:block;">ΕΠΙΒΕΒΑΙΩΣΗ</button>
+		<button onclick="closeExtras()" style="background:#e70606; color:white; padding:10px; border:none; width:70%; margin: 0 auto; border-radius:5px; cursor:pointer;">ΑΚΥΡΟ</button>
+    </div>
+</div>
+<div id="keyboardWrapper">
+    <div id="keyboardHeader" style="background:#20dcf5; color:#000; padding:8px; cursor:move; text-align:center; font-weight:bold;">
+        ⌨ ΠΛΗΚΤΡΟΛΟΓΙΟ (ΣΥΡΕ ΓΙΑ ΜΙΚΡΟΜΕΤΑΚΙΝΗΣΗ)
+    </div>
+    <div class="kb-container">
+        <div id="lettersGrid">
+            <script>
+                const chars = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ".split("");
+                chars.forEach(c => document.write(`<button class="key" onclick="addChar('${c}')">${c}</button>`));
+            </script>
+            <button class="key space" onclick="addChar(' ')">SPACE</button>
+            <button class="key backspace" onclick="delChar()">DEL</button>
+            <button class="key ok-btn" onclick="toggleKeyboard()">OK</button>
+        </div>
+
+        <div id="numbersGrid">
+            <button class="key" onclick="addChar('7')">7</button>
+            <button class="key" onclick="addChar('8')">8</button>
+            <button class="key" onclick="addChar('9')">9</button>
+            <button class="key" onclick="addChar('4')">4</button>
+            <button class="key" onclick="addChar('5')">5</button>
+            <button class="key" onclick="addChar('6')">6</button>
+            <button class="key" onclick="addChar('1')">1</button>
+            <button class="key" onclick="addChar('2')">2</button>
+            <button class="key" onclick="addChar('3')">3</button>
+            <button class="key" style="grid-column: span 3;" onclick="addChar('0')">0</button>
+            <button class="key enter-btn" onclick="handleEnter()">ENTER (ΕΥΡΕΣΗ)</button>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+let currentInput = null;
+const greekChars = "ΕΡΤΥΘΙΟΠΑΣΔΦΓΗΞΚΛΖΧΨΩΒΝΜ".split("");
+const numpadChars = ["7","8","9","4","5","6","1","2","3","0",".","CLEAR"];
+
+// Build Keyboard Letters
+const lGrid = document.getElementById('lettersGrid');
+if (lGrid) {
+    greekChars.forEach(c => {
+        let k = document.createElement('div'); 
+        k.className = 'key'; 
+        k.innerText = c;
+        k.onclick = () => { if(currentInput) currentInput.value += c; };
+        lGrid.appendChild(k);
+    });
+    let space = document.createElement('div'); 
+    space.className = 'key wide'; 
+    space.innerText = "SPACE";
+    space.onclick = () => { if(currentInput) currentInput.value += " "; };
+    lGrid.appendChild(space);
+}
+
+// ΔΙΟΡΘΩΣΗ: Στοχεύουμε το σωστό ID "numbersGrid" αντί για το ανύπαρκτο numpadGrid
+const nGrid = document.getElementById('numbersGrid');
+if (nGrid) {
+    numpadChars.forEach(n => {
+        let k = document.createElement('div'); 
+        k.className = 'key'; 
+        k.innerText = n;
+        if(n === "CLEAR") k.className = "key delete";
+        k.onclick = () => { 
+            if(!currentInput) return;
+            if(n === "CLEAR") currentInput.value = "";
+            else currentInput.value += n;
+        };
+        nGrid.appendChild(k);
+    });
+}
+
+function toggleKeyboard() {
+    let k = document.getElementById('keyboardWrapper');
+    if (k) k.style.display = (k.style.display === 'block') ? 'none' : 'block';
+}
+
+async function saveDeliveryData() {
+    const customer = {
+        phone: document.getElementById('delPhone') ? document.getElementById('delPhone').value.trim() : "",
+        name: document.getElementById('delName') ? document.getElementById('delName').value.trim() : "",
+        address: document.getElementById('delAddress') ? document.getElementById('delAddress').value.trim() : "",
+        floor: document.getElementById('delFloor') ? document.getElementById('delFloor').value.trim() : "",
+        notes: document.getElementById('delNotes') ? document.getElementById('delNotes').value.trim() : ""
+    };
+
+    if (!customer.phone || !customer.address) { 
+        alert("⚠️ Τηλέφωνο και Διεύθυνση οπωσδήποτε!"); 
+        return; 
+    }
+
+    try {
+        await fetch('save_customer.php', {
+            method: 'POST',
+            body: JSON.stringify(customer)
+        });
+        console.log("Ο πελάτης σώθηκε στο αρχείο!");
+    } catch (e) { console.error("Σφάλμα αποθήκευσης:", e); }
+
+    selectedTable = "DELIVERY: " + customer.address;
+    if (typeof allTablesData !== 'undefined') {
+        if (!allTablesData[selectedTable]) { allTablesData[selectedTable] = []; }
+        currentOrder = allTablesData[selectedTable];
+    }
+    const tTitle = document.getElementById('tableTitle');
+    if (tTitle) tTitle.innerText = selectedTable;
+    if (typeof renderOrder === "function") { renderOrder(); }
+    alert("✅ ΠΕΛΑΤΗΣ ΟΚ ΚΑΙ ΣΩΣΜΕΝΟΣ ΣΤΟ ΑΡΧΕΙΟ!");
+}
+
+function showSalon() {
+    const delView = document.getElementById('deliveryView');
+    const salView = document.getElementById('salonView');
+    if (delView) delView.classList.add('hidden');
+    if (salView) salView.classList.remove('hidden');
+    if (typeof renderTables === "function") renderTables();
+}
+
+function showDelivery() {
+    const salView = document.getElementById('salonView');
+    const delView = document.getElementById('deliveryView');
+    if (salView) salView.classList.add('hidden');
+    if (delView) {
+        delView.classList.remove('hidden');
+        delView.style.display = 'flex';
+    }
+}
+
+function applyStylesFromAdmin() {
+    try {
+        const saved = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+        if (saved['--gbr-cyan']) {
+            document.documentElement.style.setProperty('--gbr-cyan', saved['--gbr-cyan']);
+            const buttons = document.querySelectorAll('.btn-prod, .btn-nav-gbr');
+            buttons.forEach(btn => { btn.style.borderColor = saved['--gbr-cyan']; });
+        }
+    } catch (e) { console.error(e); }
+}
+
+// ΔΙΟΡΘΩΜΕΝΟ ΡΟΛΟΪ
+function updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    
+    const clockElement = document.getElementById("posClock");
+    if (clockElement) {
+        clockElement.innerText = `${hours}:${minutes}:${seconds}`;
+    }
+}
+ 
+// Εκκίνηση ρολογιού (Τρέχει κάθε 1 δευτερόλεπτο - ΣΩΣΤΟ)
+setInterval(updateClock, 1000);
+updateClock();
+ 
+// Εφαρμογή των στυλ ΜΟΝΟ ΜΙΑ ΦΟΡΑ όταν ανοίγει το POS (ΣΩΣΤΟ)
+window.addEventListener('DOMContentLoaded', applyStylesFromAdmin);
+
+// 🔥 ΤΟ setInterval(applyStylesFromAdmin, 1000); ΔΙΑΓΡΑΦΗΚΕ ΓΙΑΤΙ ΕΣΒΗΝΕ ΤΙΣ ΠΑΡΑΓΓΕΛΙΕΣ!
+</script>
+</body>
+</html>

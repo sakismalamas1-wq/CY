@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>color v2 </title>
+    <style>
+        /* Στυλ για τα κουτιά Delivery */
+        .del-input {
+            width: 100%;
+            background: #000 !important;
+            color: #fff !important;
+            border: 1px solid #3d3d3d !important;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .del-input::placeholder { color: #444; }
+        .del-input:focus {
+            border-color: #fff !important;
+            box-shadow: 0 0 10px #4a4a4a;
+            outline: none;
+        }
+        :root {
+            --gbr-cyan: #030303;
+            --gbr-dark: #090909;
+            --gbr-bg: #0f0e0e;
+            --gbr-panel: #0a0a0a;
+            --gbr-order-new: #d62225; 
+            --gbr-order-active: #b362f5; 
+            --neon-border: 4px solid var: #4e4f4f; 
+        }
+
+        body { 
+            background: #404040; 
+            color: #fbfcfb;  
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; padding: 10px; height: 100vh; overflow: hidden;
+            border: var(--neon-border);
+            box-shadow: inset 0 0 30px rgba(94, 95, 95, 0.6), 0 0 20px var: #4e4f4f; 
+            box-sizing: border-box;
+        }
+
+        .main-wrapper { 
+            display: grid; 
+            grid-template-columns: 380px 380px 1fr; 
+            gap: 15px; height: 100%; 
+        }
+
+        .sidebar-left, .order-center, .menu-right { 
+            background: #0a0a0a; 
+            border-radius: 10px; 
+            border: 2px solid var(--gbr-cyan);
+            padding: 10px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 5px 15px rgba(252, 251, 251, 0.9);
+            overflow: hidden;
+        }
+
+        .toggle-container { display: grid; grid-template-columns: 175px 175px; gap: 10px; justify-content: center; margin-bottom: 5px; }
+        .btn-toggle {
+            background: #080808;  color: #FF5F1F; 
+            border: 2px solid var: #4e4f4f;  padding: 12px; font-weight: 900; 
+            cursor: pointer; border-radius: 5px; box-shadow: 0 3px 0 #6b6c6c;
+        }
+
+        .tables-display { 
+            flex-grow: 1; display: grid; grid-template-columns: repeat(5, 1fr); 
+            gap: 4px; overflow-y: auto; padding: 0; align-content: start;
+        }
+
+        .btn-table { 
+            background: #0a0a0a;  color: #FF5F1F; border: 2px solid var(--gbr-cyan); 
+            height: 55px; border-radius: 8px; font-weight: 900; font-size: 20px;
+            box-shadow: 0 3px 0 #565757; cursor: pointer;
+        }
+
+        .nav-controls { display: flex; flex-direction: column; gap: 5px; align-items: center; margin-top: 10px; }
+        .w-360 { width: 360px; padding: 12px; font-size: 22px; }
+        .w-350 { width: 350px; padding: 12px; font-size: 22px; }
+        .split-row { display: flex; gap: 5px; width: 365px; }
+        .w-180 { width: 180px; padding: 12px; font-size: 14px; }
+
+        .btn-nav-gbr {
+            background: #0b0b0b;  color: #FF5C00; 
+            border: 2px solid var(--gbr-cyan); border-radius: 5px;
+            font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #525353;
+        }
+
+        #tableTitle { text-align: center; font-weight: 900; font-size: 24px; margin: 5px 0; }
+        #orderList { 
+            flex-grow: 1; background: #fff; color: #0a0a0a; border-radius: 5px; 
+            padding: 10px; overflow-y: scroll; font-weight: 900; 
+        }
+        #orderList::-webkit-scrollbar { width: 15px; }
+        #orderList::-webkit-scrollbar-thumb { background: #4e4f4f;  border-radius: 10px; }
+
+        #totalBox { 
+            background: #080808;  color: #FF5C00;  
+            border: 3px solid var(--gbr-cyan); font-size: 45px; font-weight: 900;
+            text-align: center; margin-top: 10px; padding: 5px;
+        }
+
+        .menu-wrapper { display: grid; grid-template-columns: 160px 1fr; gap: 10px; height: 100%; }
+        #menuCategories { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+        
+        .btn-cat {
+    background: #090909;  
+    color: #1F51FF; /* <--- ΑΛΛΑΓΗ ΣΕ ΑΣΠΡΟ */
+    border: 2px solid var(--gbr-cyan); 
+    padding: 15px 5px; 
+    font-weight: 900; 
+    font-size: 15px; 
+    cursor: pointer; 
+    border-radius: 5px;
+}
+
+.btn-cat.active { 
+    background: #070707;  !important; 
+    color:#1F51FF; !important; /* <--- ΑΛΛΑΓΗ ΣΕ ΑΣΠΡΟ ΚΑΙ ΕΔΩ */
+    box-shadow: none !important;
+    border: 2px solid var(--gbr-cyan) !important;
+}
+
+        #menuProducts { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            grid-auto-rows: 70px; /* ΣΤΑΘΕΡΟ ΥΨΟΣ ΓΙΑ ΝΑ ΜΗΝ ΜΕΓΑΛΩΝΟΥΝ */
+            gap: 10px; 
+            overflow-y: auto; 
+            align-content: start; /* ΣΠΡΩΞΙΜΟ ΠΑΝΩ */
+        }
+
+        .btn-prod {
+    background: #090909; 
+    color: #1F51FF;  /* <--- ΑΥΤΟ ΑΛΛΑΞΕ ΣΕ #ffffff ΓΙΑ ΑΣΠΡΑ ΓΡΑΜΜΑΤΑ */
+    border: 2px solid var(--gbr-cyan); 
+    border-radius: 8px;
+    height: 100%; 
+    font-weight: 900; 
+    font-size: 16px; 
+    cursor: pointer;
+}
+
+        .table-has-order { background: var(--gbr-order-active) !important; color: #1F51FF; }
+        .pulsing-red { 
+            background: var(--gbr-order-new) !important; color: _rgb(5, 5, 5);
+            animation: pulse-gbr 0.6s infinite alternate; 
+        }
+        @keyframes pulse-gbr { from { opacity: 1; } to { opacity: 0.7; } }
+
+        .hidden { display: none !important; }
+
+        @media screen and (min-width: 1000px) {
+            .modal-content, #extrasModal, .options-panel { 
+                position: fixed !important;
+                top: 50% !important; left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: 600px !important;
+                max-height: 100vh;
+                overflow-y: auto;
+            }
+            .extra-item-btn, .option-button, .modifier-btn {
+                font-size: 30px !important;
+                padding: 60px !important;
+                margin: 60px !important;
+                min-width: 250px !important;
+            }
+            .modal-content h3 {
+                font-size: 30px !important;
+                text-align: center;
+                border-bottom: 20px solid var(--gbr-cyan);
+            }
+        }
+		/* Αυτό θα πιάσει όλα τα κουμπιά μέσα στο παράθυρο των Extras */
+#extrasList button {
+    font-size: 18px !important;    /* Μέγεθος γραμμάτων */
+    padding: 16px 10px !important; /* Το 25px είναι το ΥΨΟΣ. Αν το θες πιο ψηλό, βάλτο 35px ή 40px */
+    margin: 1px !important;        /* Απόσταση μεταξύ των κουμπιών */
+    min-height: 50px !important;   /* Ελάχιστο ύψος για να είναι ομοιόμορφα */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Για το μεγάλο κουμπί ΕΠΙΒΕΒΑΙΩΣΗ στο τέλος */
+#extrasModal button:last-child {
+    padding: 16px 1px!important;
+    font-size: 18px !important;
+    margin-top: 5px !important;
+}
+/* ΠΛΗΚΤΡΟΛΟΓΙΟ DELIVERY - ΜΑΚΡΟΣΤΕΝΟ ΜΕ NUMPAD */
+#keyboardWrapper {
+    display: none; 
+    position: fixed; 
+    z-index: 11000; 
+    background: #1a1a1a; 
+    border: 3px solid #5f6161; 
+    border-radius: 15px; 
+    width: 1350px; /* Πιο πλατύ για να χωρέσει το NumPad */
+    box-shadow: 0 0 23px rgba(0,0,0,1); 
+    touch-action: none;
+}
+
+#keyboardWrapper {
+    display: none; 
+    position: fixed; 
+    z-index: 11000; 
+    background: #1a1a1a; 
+    border-top: 4px solid #20dcf5; 
+    width: 1300px; 
+    height: 350px; /* Αυξάνεις εδώ το ύψος (π.χ. 500px) για να ταιριάξει */
+    bottom: 0; 
+    left: 0;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.8); 
+    touch-action: none; /* Απαραίτητο για το touch drag */
+}
+
+.kb-container {
+    display: grid;
+    grid-template-columns: 1fr 350px; /* Πιο μεγάλο NumPad */
+    gap: 10px;
+    padding: 10px;
+}
+
+#lettersGrid { display: grid; grid-template-columns: repeat(11, 1fr); gap: 8px; }
+#numbersGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+/* Μεγαλώνουμε τα κουμπιά για να γεμίσουν το νέο ύψος */
+.key { 
+    background: #333; 
+    color: white; 
+    padding: 4px 0; /* Αύξησε το padding για πιο ψηλά κουμπιά */
+    border: 1px solid #444; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    font-size: 28px; 
+    cursor: pointer; 
+}
+
+.key:active { background: #20dcf5; color: black; }
+.key.space { grid-column: span 6; background: #444; }
+.key.backspace { background: #dc3545; }
+.key.ok-btn { background: #007bff; } /* Το ΟΚ δίπλα στο DEL */
+.key.enter-btn { background: #28a745; grid-column: span 3; height: 100px; } /* ENTER κάτω από αριθμούς */
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <div class="sidebar-left">
+        <div class="toggle-container">
+            <button class="btn-toggle" onclick="showSalon()">ΣΑΛΟΝΙ</button>
+            <button class="btn-toggle" onclick="showDelivery()">DELIVERY</button>
+        </div>
+
+        <div id="salonView" class="tables-display"></div>
+
+        <div id="deliveryView" class="hidden" style="display: flex; flex-direction: column; flex-grow: 1;">
+            <div id="deliveryFields" style="background: #0d0d0d; border: 2px solid #20dcf5; padding: 8px; margin: 5px; border-radius: 10px; width: 360px; box-sizing: border-box;">
+                <h3 style="color:#878a8a; margin: 0 0 5px 0; font-size:13px; text-align: center;">📍 ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</h3>
+                <input type="text" id="delPhone" placeholder="1. ΤΗΛΕΦΩΝΟ" class="del-input" style="margin-bottom: 5px; padding: 8px;" onkeydown="if(event.key==='Enter') findCustomer(this.value)">
+                <input type="text" id="delName" placeholder="2. ΟΝΟΜΑ" class="del-input" style="margin-bottom: 5px; padding: 8px;">
+                <input type="text" id="delAddress" placeholder="3. ΔΙΕΥΘΥΝΣΗ" class="del-input" style="margin-bottom: 5px; padding: 8px;">
+                <input type="text" id="delFloor" placeholder="4. ΟΡΟΦΟΣ" class="del-input" style="margin-bottom: 5px; padding: 8px;">
+                <input type="text" id="delNotes" placeholder="5. ΣΧΟΛΙΑ" class="del-input" style="margin-bottom: 8px; padding: 8px;">
+                <button class="btn-nav-gbr" onclick="saveDeliveryData()" style="width: 100%; background: #1F51FF; color: #000; padding: 10px; font-size: 14px; border: none;">🚀 ΕΝΑΡΞΗ DELIVERY</button>
+            </div>
+            <div id="deliveryTables" class="tables-display" style="display: grid; flex-grow: 1;"></div>
+        </div>
+
+        <div class="nav-controls">
+            <button class="btn-nav-gbr w-360" onclick="printToKitchen()">👨‍🍳 1. ΚΟΥΖΙΝΑ</button>
+            <button class="btn-nav-gbr w-360" onclick="printFinalBill()">💰 2. ΣΥΝΟΛΟ</button>
+            <button class="btn-nav-gbr w-360" onclick="clearCurrentOrder()">❌ 3. ΑΚΥΡΩΣΗ</button>
+            <div class="split-row">
+                <button class="btn-nav-gbr w-180" onclick="window.location.href='admin.html'">⚙ ADMIN</button>
+                <button class="btn-nav-gbr w-180" onclick="openSecureCashier()">🏦 ΤΑΜΕΙΟ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="order-center">
+        <div id="tableTitle">ΕΠΙΛΕΞΤΕ</div>
+        <div id="orderList"></div>
+        <div id="totalBox">0.00€</div>
+    </div>
+
+    <div class="menu-right">
+        <div class="menu-wrapper">
+            <div id="menuCategories"></div>
+            <div id="menuProducts"></div>
+        </div>
+    </div>
+</div>
+
+<div id="extrasModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <div class="sidebar-left" style="width:500px; border:10px solid var(--gbr-cyan); background:#000;">
+        <h2 id="modalProdName" style="text-align:center;">EXTRAS</h2>
+        <div id="extrasList" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:40px 0;"></div>
+        <button class="btn-nav-gbr w-360" onclick="confirmExtras()" style="background:var(--gbr-cyan); color:#000; margin: 0 auto; display:block;">ΕΠΙΒΕΒΑΙΩΣΗ</button>
+		<button onclick="closeExtras()" style="background:#e70606; color:white; padding:10px; border:none; width:70%; margin: 0 auto; border-radius:5px; cursor:pointer;">ΑΚΥΡΟ</button>
+    </div>
+</div>
+<div id="keyboardWrapper">
+    <div id="keyboardHeader" style="background:#20dcf5; color:#000; padding:8px; cursor:move; text-align:center; font-weight:bold;">
+        ⌨ ΠΛΗΚΤΡΟΛΟΓΙΟ (ΣΥΡΕ ΓΙΑ ΜΙΚΡΟΜΕΤΑΚΙΝΗΣΗ)
+    </div>
+    <div class="kb-container">
+        <div id="lettersGrid">
+            <script>
+                const chars = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ".split("");
+                chars.forEach(c => document.write(`<button class="key" onclick="addChar('${c}')">${c}</button>`));
+            </script>
+            <button class="key space" onclick="addChar(' ')">SPACE</button>
+            <button class="key backspace" onclick="delChar()">DEL</button>
+            <button class="key ok-btn" onclick="toggleKeyboard()">OK</button>
+        </div>
+
+        <div id="numbersGrid">
+            <button class="key" onclick="addChar('7')">7</button>
+            <button class="key" onclick="addChar('8')">8</button>
+            <button class="key" onclick="addChar('9')">9</button>
+            <button class="key" onclick="addChar('4')">4</button>
+            <button class="key" onclick="addChar('5')">5</button>
+            <button class="key" onclick="addChar('6')">6</button>
+            <button class="key" onclick="addChar('1')">1</button>
+            <button class="key" onclick="addChar('2')">2</button>
+            <button class="key" onclick="addChar('3')">3</button>
+            <button class="key" style="grid-column: span 3;" onclick="addChar('0')">0</button>
+            <button class="key enter-btn" onclick="handleEnter()">ENTER (ΕΥΡΕΣΗ)</button>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>_
+<script>
+async function saveDeliveryData() {
+    const customer = {
+        phone: document.getElementById('delPhone').value.trim(),
+        name: document.getElementById('delName').value.trim(),
+        address: document.getElementById('delAddress').value.trim(),
+        floor: document.getElementById('delFloor').value.trim(),
+        notes: document.getElementById('delNotes').value.trim()
+    };
+
+    if (!customer.phone || !customer.address) { 
+        alert("⚠️ Τηλέφωνο και Διεύθυνση οπωσδήποτε!"); 
+        return; 
+    }
+
+    // Στέλνουμε τον πελάτη στο αρχείο customers.json μέσω PHP
+    try {
+        await fetch('save_customer.php', {
+            method: 'POST',
+            body: JSON.stringify(customer)
+        });
+        console.log("Ο πελάτης σώθηκε στο αρχείο!");
+    } catch (e) { console.error("Σφάλμα αποθήκευσης:", e); }
+
+    // Ενεργοποίηση παραγγελίας όπως πριν
+    selectedTable = "DELIVERY: " + customer.address;
+    if (!allTablesData[selectedTable]) { allTablesData[selectedTable] = []; }
+    currentOrder = allTablesData[selectedTable];
+    document.getElementById('tableTitle').innerText = selectedTable;
+    if (typeof renderOrder === "function") { renderOrder(); }
+    alert("✅ ΠΕΛΑΤΗΣ ΟΚ ΚΑΙ ΣΩΣΜΕΝΟΣ ΣΤΟ ΑΡΧΕΙΟ!");
+}
+
+function showSalon() {
+    document.getElementById('deliveryView').classList.add('hidden');
+    document.getElementById('salonView').classList.remove('hidden');
+    if (typeof renderTables === "function") renderTables();
+}
+
+function showDelivery() {
+    document.getElementById('salonView').classList.add('hidden');
+    document.getElementById('deliveryView').classList.remove('hidden');
+    document.getElementById('deliveryView').style.display = 'flex';
+}
+
+function applyStylesFromAdmin() {
+    const saved = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+    if (saved['--gbr-cyan']) {
+        document.documentElement.style.setProperty('--gbr-cyan', saved['--gbr-cyan']);
+        const buttons = document.querySelectorAll('.btn-prod, .btn-nav-gbr');
+        buttons.forEach(btn => { btn.style.borderColor = saved['--gbr-cyan']; });
+    }
+}
+window.addEventListener('DOMContentLoaded', applyStylesFromAdmin);
+setInterval(applyStylesFromAdmin, 1000);
+</script>
+</body>
+</html>

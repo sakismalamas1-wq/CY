@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>=CY=Admin</title>
+    <style>
+        :root {
+            --gbr-cyan: #20dcf5;
+            --gbr-dark: #000000;
+            --gbr-bg: #050505;
+            --gbr-panel: #0d0d0d;
+        }
+
+        body { 
+            background: var(--gbr-bg); color: var(--gbr-cyan); font-family: 'Segoe UI', sans-serif; 
+            border: 4px solid var(--gbr-cyan); box-shadow: inset 0 0 20px var(--gbr-cyan);
+            min-height: 100vh; margin: 0; padding: 20px; padding-top: 95px; box-sizing: border-box;
+        }
+
+        /* COMPACT TOP BAR ΠΟΥ ΧΩΡΑΕΙ ΟΛΕΣ ΤΙΣ ΛΕΙΤΟΥΡΓΙΕΣ */
+        .admin-top-bar {
+            position: fixed;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            height: 75px;
+            background: #000;
+            border-bottom: 2px solid var(--gbr-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            z-index: 9999;
+            padding: 0 15px;
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+
+        .top-bar-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-right: 1px solid #222;
+            padding-right: 10px;
+        }
+        
+        .top-bar-section:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .top-bar-section span.section-title {
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .top-bar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .top-bar-group label {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 12px !important;
+            color: #aaa !important;
+        }
+
+        /* ΜΙΚΡΑ ΚΟΥΜΠΙΑ ΓΙΑ ΝΑ ΧΩΡΑΝΕ */
+        .top-btn {
+            background: #111;
+            color: #fff;
+            border: 1px solid var(--gbr-cyan);
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .top-btn:hover {
+            background: var(--gbr-cyan);
+            color: #000;
+            box-shadow: 0 0 8px var(--gbr-cyan);
+        }
+
+        .top-btn-back { border-color: #f5b505; color: #f5b505; }
+        .top-btn-back:hover { background: #f5b505; color: #000; box-shadow: 0 0 8px #f5b505; }
+
+        /* INPUTS ΜΕΣΑ ΣΤΟ TOP BAR */
+        .top-bar-section input[type="range"] {
+            width: 70px;
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+            height: 5px;
+        }
+
+        .top-bar-section input[type="number"] {
+            width: 45px;
+            padding: 3px;
+            margin: 0;
+            font-size: 14px;
+            text-align: center;
+            box-shadow: none;
+        }
+
+        .top-bar-section input[type="color"] {
+            width: 25px;
+            height: 25px;
+            padding: 0;
+            margin: 0;
+            border: 1px solid var(--gbr-cyan);
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        /* ΤΡΙΣΤΗΛΗ ΔΙΑΡΡΥΘΜΙΣΗ ΣΕΛΙΔΑΣ */
+        .admin-wrapper { 
+            display: grid; 
+            grid-template-columns: 380px 75px 1fr; 
+            gap: 15px; 
+            height: calc(100vh - 125px);
+        }
+
+        .sidebar, .category-shortcuts, .main-content { 
+            background: var(--gbr-panel); 
+            border: 2px solid var(--gbr-cyan); 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 5px 25px rgba(243, 243, 72, 0.15);
+            overflow-y: auto;
+        }
+
+        /* ΕΙΔΙΚΟ ΣΤΥΛ ΓΙΑ ΤΗ ΜΕΣΑΙΑ ΣΤΗΛΗ */
+        .category-shortcuts {
+            padding: 10px 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .sc-btn {
+            width: 55px;
+            height: 38px;
+            background: #000;
+            color: #fff;
+            border: 2px solid var(--gbr-cyan);
+            font-weight: 900;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 0 #f88502;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sc-btn:hover {
+            background: var(--gbr-cyan);
+            color: #000;
+            box-shadow: 0 0 8px var(--gbr-cyan);
+            transform: scale(1.05);
+        }
+
+        .sc-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        h2 { color: var(--gbr-cyan); text-shadow: 0 0 10px var(--gbr-cyan); text-transform: uppercase; margin-top: 0; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        label { display: block; margin-top: 12px; font-weight: 900; font-size: 13px; color: #fff; }
+        
+        input, select { 
+            background: #000; color: #fff; border: 2px solid var(--gbr-cyan); box-shadow: 0 4px 0 #f88502;
+            padding: 10px; border-radius: 5px; margin-top: 5px; width: 100%; box-sizing: border-box;
+            font-weight: bold;
+        }
+
+        .sidebar button { 
+            background: #000; color: var(--gbr-cyan); border: 2px solid #f5b505; 
+            padding: 12px; font-weight: 900; cursor: pointer; border-radius: 8px;
+            box-shadow: 0 4px 0 #f5c402f3; transition: 0.2s; width: 100%; margin-top: 15px;
+        }
+
+        .sidebar button:active { transform: translateY(3px); box-shadow: 0 1px 0 #3adbf0; }
+        .btn-add { background: var(--gbr-cyan); color: #000; }
+        .btn-save { background: #d62225; color: #fff; border-color: #f5b505 }
+
+        .cat-title { background: #f36c0c; color: var(--gbr-cyan); padding: 10px; margin: 25px 0 10px 0; font-weight: 900; border-left: 5px solid var(--gbr-cyan); box-shadow: 0 5px 0 #0330f7; scroll-margin-top: 10px; }
+        .cat-title:first-child { margin-top: 0; }
+        
+        .item-card { 
+            background: #111; border-bottom: 1px solid #222; padding: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        .item-info b { font-size: 18px; color: #fff; }
+        .item-info span { color: var(--gbr-cyan); margin-left: 10px; }
+        .btn-del { background: transparent; color: #ff4444; border: 1px solid #ff4444; width: auto; padding: 5px 15px; font-size: 12px; box-shadow: none; }
+        .btn-mod { background: transparent; color: var(--gbr-cyan); border: 1px solid var(--gbr-cyan); width: auto; padding: 5px 15px; font-size: 12px; box-shadow: none; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="admin-top-bar">
+    <div class="top-bar-section">
+        <button class="top-btn top-btn-back" onclick="window.location.href='index.html'">⬅ ΕΠΙΣΤΡΟΦΗ ΣΤΟ POS</button>
+        
+        <div class="top-bar-group">
+            <label>DELIVERY</label>
+            <div style="display:flex; align-items:center; gap:4px;">
+                <input type="range" id="slider-delivery" min="14" max="35" value="18" oninput="updateStyle('--delivery-font-size', this.value + 'px')">
+                <span id="val--delivery-font-size" style="color:#20dcf5; font-size:14px;">18px</span>
+            </div>
+        </div>
+        <div class="top-bar-group">
+            <label>ΕΚΤΥΠΩΣΗ</label>
+            <div style="display:flex; align-items:center; gap:4px;">
+                <input type="range" id="slider-print" min="15" max="45" value="22" oninput="updateStyle('--print-font-size', this.value + 'px')">
+                <span id="val--print-font-size" style="color:#20dcf5; font-size:14px;">22px</span>
+            </div>
+        </div>
+        <div class="top-bar-group">
+            <label>NEON</label>
+            <input type="color" value="#20dcf5" onchange="updateStyle('--gbr-cyan', this.value)">
+        </div>
+    </div>
+
+    <div class="top-bar-section">
+        <span class="section-title">🖨 ΑΝΤΙΓΡΑΦΑ</span>
+        <div class="top-bar-group">
+            <label>ΚΟΥΖΙΝΑ</label>
+            <input type="number" id="print-copies-kitchen" min="1" max="2" value="1">
+        </div>
+        <div class="top-bar-group">
+            <label>ΤΑΜΕΙΟ</label>
+            <input type="number" id="print-copies-total" min="1" max="2" value="1">
+        </div>
+    </div>
+
+    <div class="top-bar-section">
+        <span class="section-title">BACKUP</span>
+        <input type="file" id="fileInp" style="display:none" onchange="importFile(event)">
+        <button class="top-btn" onclick="document.getElementById('fileInp').click()">📥 ΕΙΣΑΓΩΓΗ</button>
+        <button class="top-btn" onclick="downloadBackup()">📤 ΕΞΑΓΩΓΗ</button>
+    </div>
+
+    <div class="top-bar-section">
+        <button class="top-btn top-btn-back" onclick="window.location.href='index.html'">⬅ ΕΠΙΣΤΡΟΦΗ ΣΤΟ POS</button>
+    </div>
+</div>
+
+<div class="admin-wrapper">
+    <div class="sidebar">
+        <h2 id="formTitle">ΠΡΟΣΘΗΚΗ</h2>
+        
+        <label>ΟΝΟΜΑ ΠΡΟΪΟΝΤΟΣ</label>
+        <input type="text" id="pName" placeholder="π.χ. ΦΡΕΝΤΟ ΕΣΠΡΕΣΣΟ">
+
+        <label>ΤΙΜΗ (€)</label>
+        <input type="number" id="pPrice" step="0.10" placeholder="0.00">
+
+        <label>ΚΑΤΗΓΟΡΙΑ</label>
+        <select id="pCat">
+            <option>ΟΡΕΚΤΙΚΑ</option><option>ΣΑΛΑΤΕΣ</option>
+            <option>ΣΧΑΡΑΣ</option><option>ΤΕΜΑΧΙΑ</option><option>ΣΠΕΣΙΑΛ</option><option>ΜΑΓΕΙΡΕΥΤΑ</option>
+            <option>ΘΑΛΑΣΣΙΝΑ</option><option>ΟΥΖΑ ΤΣΙΠΟΥΡΑ</option><option>ΜΠΥΡΕΣ</option>
+            <option>ΚΡΑΣΙΑ ΡΕΤΣΙΝΕΣ</option><option>ΑΝΑΨΥΚΤΙΚΑ</option><option>ΣΑΝΤΟΥΙΤΣ</option><option>ΧΡΕΩΣΕΙΣ</option>
+        </select>
+
+        <label style="color:#5af542;">ΠΡΟΤΙΜΗΣΕΙΣ (ΔΩΡΕΑΝ - Με κόμμα ,)</label>
+        <input type="text" id="pExtras" placeholder="π.χ. ΜΕΤΡΙΟΣ, ΚΑΣΤΑΝΗ, 1 ΠΑΓΟ">
+        
+        <label style="color:#f5cd1c;">ΕΞΤΡΑ ΜΕ ΧΡΕΩΣΗ (Με κόμμα ,)</label>
+        <input type="text" id="pPaidExtras" placeholder="π.χ. ΚΟΥΛΟΥΡΑΚΙ +0.30, ΣΙΡΟΠΙ +0.40">
+        
+        <label>ΑΠΟΘΕΜΑ (ΤΕΜΑΧΙΑ)</label>
+        <input type="number" id="pStock" placeholder="π.χ. 20" value="0">
+
+        <label>ΟΡΙΟ ΑΣΦΑΛΕΙΑΣ</label>
+        <input type="number" id="pMinStock" placeholder="π.χ. 5" value="0">
+
+        <button class="btn-add" id="mainBtn" onclick="addItem()">+ ΠΡΟΣΘΗΚΗ ΣΤΗ ΛΙΣΤΑ</button>
+        <button class="btn-save" onclick="saveToCloud()">🚀 ΑΠΟΣΤΟΛΗ ΣΕ PC & PDA</button>
+    </div>
+
+    <div class="category-shortcuts">
+        <button class="sc-btn" onclick="scrollToCategory('ΟΡΕΚΤΙΚΑ')">ΟΡ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΣΑΛΑΤΕΣ')">ΣΑ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΣΧΑΡΑΣ')">ΣΧ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΤΕΜΑΧΙΑ')">ΤΕ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΣΠΕΣΙΑΛ')">ΣΠ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΜΑΓΕΙΡΕΥΤΑ')">ΜΑ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΘΑΛΑΣΣΙΝΑ')">ΘΑ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΟΥΖΑ ΤΣΙΠΟΥΡΑ')">ΟΥ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΜΠΥΡΕΣ')">ΜΠ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΚΡΑΣΙΑ ΡΕΤΣΙΝΕΣ')">ΡΕ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΑΝΑΨΥΚΤΙΚΑ')">ΑΝ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΣΑΝΤΟΥΙΤΣ')">ΣΑΝ</button>
+        <button class="sc-btn" onclick="scrollToCategory('ΧΡΕΩΣΕΙΣ')">ΧΡ</button>
+    </div>
+
+    <div class="main-content" id="mainContentScrollArea">
+        <h2>ΥΠΑΡΧΟΝΤΑ ΠΡΟΪΟΝΤΑ</h2>
+        <div id="itemsList"></div>
+    </div>
+</div>
+
+<script>
+(function protectAdmin() {
+    const password = "0000"; 
+    const sessionKey = "admin_authorized";
+
+    if (sessionStorage.getItem(sessionKey) !== "true") {
+        let input = prompt("Παρακαλώ εισάγετε τον κωδικό πρόσβασης για το Admin:");
+        
+        if (input === password) {
+            sessionStorage.setItem(sessionKey, "true");
+        } else {
+            alert("Λάθος κωδικός! Πρόσβαση απαγορεύεται.");
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:20%; color:white;'>🔒 Πρόσβαση Απαγορεύεται</h1>";
+            window.stop(); 
+        }
+    }
+})();
+
+    let products = JSON.parse(localStorage.getItem('roxani_products')) || [];
+    let editIndex = -1;
+
+    function updateStyle(variable, value) {
+        document.documentElement.style.setProperty(variable, value);
+        const display = document.getElementById('val' + variable);
+        if(display) display.innerText = value;
+
+        const settings = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+        settings[variable] = value;
+        localStorage.setItem('gbr_ui_settings', JSON.stringify(settings));
+    }
+
+function scrollToCategory(catName) {
+    const safeId = "cat-" + catName.replace(/\s+/g, '-');
+    const target = document.getElementById(safeId);
+    if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        alert("Δεν υπάρχουν προϊόντα στην κατηγορία " + catName);
+    }
+}
+
+function renderList() {
+    const listDiv = document.getElementById('itemsList');
+    listDiv.innerHTML = "";
+    
+    if (products.length === 0) {
+        listDiv.innerHTML = "<p style='color:#666; padding:20px;'>Η λίστα είναι άδεια.</p>";
+        return;
+    }
+
+    const grouped = {};
+    products.forEach((p, index) => {
+        let c = p.category || "ΧΡΕΩΣΕΙΣ";
+        if(!grouped[c]) grouped[c] = [];
+        grouped[c].push({...p, originalIndex: index});
+    });
+
+    const categoriesOrder = ["ΟΡΕΚΤΙΚΑ", "ΣΑΛΑΤΕΣ", "ΣΧΑΡΑΣ", "ΤΕΜΑΧΙΑ", "ΣΠΕΣΙΑΛ", "ΜΑΓΕΙΡΕΥΤΑ", "ΘΑΛΑΣΣΙΝΑ", "ΟΥΖΑ ΤΣΙΠΟΥΡΑ", "ΜΠΥΡΕΣ", "ΚΡΑΣΙΑ ΡΕΤΣΙΝΕΣ", "ΑΝΑΨΥΚΤΙΚΑ", "ΣΑΝΤΟΥΙΤΣ", "ΧΡΕΩΣΕΙΣ"];
+
+    categoriesOrder.forEach(cat => {
+        if(grouped[cat]) {
+            const title = document.createElement('div');
+            title.className = "cat-title";
+            title.id = "cat-" + cat.replace(/\s+/g, '-');
+            title.innerText = cat;
+            listDiv.appendChild(title);
+            
+            grouped[cat].forEach(item => {
+                let stockColor = "#00ff00"; 
+                let currentStock = item.stock !== undefined ? item.stock : 0;
+                let minAllowed = item.min_stock !== undefined ? item.min_stock : 0;
+
+                if (currentStock <= minAllowed) stockColor = "#f5cd1c"; 
+                if (currentStock <= 0) stockColor = "#ff4444"; 
+
+                // Κατασκευή κειμένου εμφάνισης extras στην κάρτα προϊόντος
+                let extrasPreview = "";
+                if(item.extras && item.extras.length > 0 && item.extras[0] !== "") {
+                    extrasPreview += `<div style="color: #5af542; font-size:12px;">✔ Δωρεάν: ${item.extras.join(', ')}</div>`;
+                }
+                if(item.paid_extras && item.paid_extras.length > 0 && item.paid_extras[0] !== "") {
+                    extrasPreview += `<div style="color: #f5cd1c; font-size:12px;">🪙 Χρεώσιμα: ${item.paid_extras.join(', ')}</div>`;
+                }
+
+                const row = document.createElement('div');
+                row.className = "item-card";
+                row.innerHTML = `
+                    <div class="item-info">
+                        <b>${item.name}</b>
+                        <span>${item.price.toFixed(2)}€</span>
+                        ${extrasPreview}
+                        <div style="font-size: 14px; margin-top: 5px; color: ${stockColor};">
+                            📦 Απόθεμα: <b>${currentStock}</b> 
+                            <span style="color: #ffff00; font-size: 14px; margin-left: 10px;">(Όριο ασφαλείας: ${minAllowed})</span>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn-mod" onclick="prepareEdit(${item.originalIndex})">ΜΕΤΑΒΟΛΗ</button>
+                        <button class="btn-del" onclick="deleteItem(${item.originalIndex})">ΔΙΑΓΡΑΦΗ</button>
+                    </div>
+                `;
+                listDiv.appendChild(row);
+            });
+        }
+    });
+}
+
+function addItem() {
+    const nameInput = document.getElementById('pName');
+    const priceInput = document.getElementById('pPrice');
+    const catInput = document.getElementById('pCat');
+    const extrasInput = document.getElementById('pExtras');
+    const paidExtrasInput = document.getElementById('pPaidExtras');
+    const stockInput = document.getElementById('pStock');
+    const minStockInput = document.getElementById('pMinStock');
+
+    const name = nameInput.value.trim();
+    const price = parseFloat(priceInput.value);
+    const cat = catInput.value;
+    
+    // Split και map για σωστό καθαρισμό κενών
+    const extras = extrasInput.value ? extrasInput.value.split(',').map(e => e.trim()).filter(e => e !== "") : [];
+    const paid_extras = paidExtrasInput.value ? paidExtrasInput.value.split(',').map(e => e.trim()).filter(e => e !== "") : [];
+    
+    const stock = parseInt(stockInput.value) || 0;
+    const min_stock = parseInt(minStockInput.value) || 0;
+
+    if(!name || isNaN(price)) return alert("Συμπλήρωσε Όνομα και Τιμή!");
+
+    const productData = { 
+        name, 
+        price, 
+        category: cat, 
+        extras,        // Δωρεάν προτιμήσεις
+        paid_extras,   // Χρεώσιμα extras
+        stock: stock, 
+        min_stock: min_stock 
+    };
+
+    if(editIndex === -1) {
+        products.push(productData);
+    } else {
+        products[editIndex] = productData;
+        editIndex = -1;
+        document.getElementById('mainBtn').innerText = "+ ΠΡΟΣΘΗΚΗ ΣΤΗ ΛΙΣΤΑ";
+        document.getElementById('formTitle').innerText = "ΠΡΟΣΘΗΚΗ";
+    }
+
+    localStorage.setItem('roxani_products', JSON.stringify(products));
+    
+    nameInput.value = "";
+    priceInput.value = "";
+    extrasInput.value = "";
+    paidExtrasInput.value = "";
+    stockInput.value = "0";      
+    minStockInput.value = "0";    
+    
+    renderList();
+}
+
+function prepareEdit(index) {
+    editIndex = index;
+    const p = products[index];
+    document.getElementById('pName').value = p.name;
+    document.getElementById('pPrice').value = p.price;
+    document.getElementById('pCat').value = p.category;
+    
+    // Γέμισμα και των δύο πεδίων κατά τη διόρθωση
+    document.getElementById('pExtras').value = p.extras ? p.extras.join(', ') : "";
+    document.getElementById('pPaidExtras').value = p.paid_extras ? p.paid_extras.join(', ') : "";
+    
+    document.getElementById('pStock').value = p.stock !== undefined ? p.stock : 0;
+    document.getElementById('pMinStock').value = p.min_stock !== undefined ? p.min_stock : 0;
+    
+    document.getElementById('mainBtn').innerText = "✅ ΕΝΗΜΕΡΩΣΗ";
+    document.getElementById('formTitle').innerText = "ΔΙΟΡΘΩΣΗ: " + p.name;
+    
+    document.querySelector('.sidebar').scrollTop = 0;
+}
+
+function deleteItem(index) {
+    if(confirm("Διαγραφή προϊόντος;")) {
+        products.splice(index, 1);
+        localStorage.setItem('roxani_products', JSON.stringify(products));
+        renderList();
+    }
+}
+
+function downloadBackup() {
+    const blob = new Blob([JSON.stringify(products, null, 2)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "menu_backup.json"; 
+    a.click();
+}
+
+function importFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            products = JSON.parse(e.target.result);
+            localStorage.setItem('roxani_products', JSON.stringify(products));
+            renderList();
+            alert("✅ Backup φορτώθηκε!");
+        } catch(err) { alert("❌ Άκυρο αρχείο backup."); }
+    };
+    reader.readAsText(file);
+}
+
+function loadSavedSettingsToSliders() {
+    const saved = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+    
+    if (saved['--delivery-font-size']) {
+        const val = saved['--delivery-font-size'].replace('px', '');
+        const sliderDel = document.getElementById('slider-delivery');
+        if(sliderDel) {
+            sliderDel.value = val;
+            document.getElementById('val--delivery-font-size').innerText = val + 'px';
+        }
+    }
+
+    if (saved['--print-font-size']) {
+        const val = saved['--print-font-size'].replace('px', '');
+        const sliderPrint = document.getElementById('slider-print');
+        if(sliderPrint) {
+            sliderPrint.value = val;
+            document.getElementById('val--print-font-size').innerText = val + 'px';
+        }
+    }
+
+    if (saved['--gbr-cyan']) {
+        const colorPicker = document.querySelector('input[type="color"]');
+        if(colorPicker) {
+            colorPicker.value = saved['--gbr-cyan'];
+        }
+        document.documentElement.style.setProperty('--gbr-cyan', saved['--gbr-cyan']);
+    }
+}
+
+async function saveToCloud() {
+    const kitchenCopies = document.getElementById('print-copies-kitchen').value;
+    const totalCopies = document.getElementById('print-copies-total').value;
+
+    const dataToSend = {
+        products: products, 
+        settings: {
+            kitchen_copies: kitchenCopies,
+            total_copies: totalCopies,
+        }
+    };
+
+    try {
+        const res = await fetch('sync.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(dataToSend)
+        });
+        
+        if(res.ok) {
+            alert("Συγχρονισμός OK με " + kitchenCopies + " αντίγραφα κουζίνας!");
+            // Αποθήκευση τοπικά των ρυθμίσεων αντιγράφων
+            const settings = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+            settings.kitchen_copies = kitchenCopies;
+            settings.total_copies = totalCopies;
+            localStorage.setItem('gbr_ui_settings', JSON.stringify(settings));
+        }
+    } catch(e) {
+        alert("❌ Σφάλμα κατά την αποστολή στο cloud.");
+    }
+}
+
+function loadSavedSettings() {
+    const saved = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+    if (saved.kitchen_copies) {
+        document.getElementById('print-copies-kitchen').value = saved.kitchen_copies;
+    }
+    if (saved.total_copies) {
+        document.getElementById('print-copies-total').value = saved.total_copies;
+    }
+}
+
+async function loadProductsFromServer() {
+    try {
+        const res = await fetch('sync.php?v=' + Date.now());
+        const data = await res.json();
+        if (data && data.products) {
+            products = data.products;
+            localStorage.setItem('roxani_products', JSON.stringify(products));
+            renderList(); 
+        }
+    } catch (e) {
+        console.error("Αποτυχία φόρτωσης από server", e);
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    loadSavedSettingsToSliders();
+    loadSavedSettings();
+    loadProductsFromServer(); 
+});
+
+    renderList();
+</script>
+</body>
+</html>

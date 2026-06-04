@@ -1,0 +1,33 @@
+/* ΠΡΑΣΙΝΟ ΣΧΟΛΙΟ: ΕΜΦΑΝΙΣΗ ΤΡΑΠΕΖΙΩΝ ΚΑΙ ΦΩΤΙΣΜΟΣ ΤΟΥ ΕΠΙΛΕΓΜΕΝΟΥ */
+function renderTables() {
+    const container = document.getElementById('salonView');
+    if(!container) return;
+    container.innerHTML = "";
+    
+    tableNums.forEach(n => {
+        let name = (n === "TAKE AWAY") ? n : "ΤΡΑΠΕΖΙ " + n;
+        const btn = document.createElement('button');
+        btn.className = "btn-table"; 
+        
+        // ΠΡΑΣΙΝΟ ΣΧΟΛΙΟ: ΕΔΩ ΓΙΝΕΤΑΙ Η "ΜΑΓΕΙΑ" - ΑΝ ΕΙΝΑΙ ΤΟ ΕΠΙΛΕΓΜΕΝΟ, ΦΩΤΙΣΕ ΤΟ
+        if(selectedTable === name) {
+            btn.style.border = "4px solid #fff";
+            btn.style.boxShadow = "0 0 25px #20dcf5";
+            btn.style.transform = "scale(1.1)";
+            btn.style.zIndex = "10";
+        }
+        
+        let items = allTablesData[name] || [];
+        if(items.length > 0) {
+            let hasNew = items.some(it => !it.printed);
+            if(hasNew) {
+                btn.classList.add('pulsing-red'); 
+            } else {
+                btn.classList.add('table-has-order'); 
+            }
+        }
+        btn.innerText = n;
+        btn.onclick = () => selectTable(name);
+        container.appendChild(btn);
+    });
+}

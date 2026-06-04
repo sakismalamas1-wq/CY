@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>MENU</title>
+    <style>
+        :root {
+            --gbr-cyan: #20dcf5;
+            --gbr-dark: #000000;
+            --gbr-bg: #050505;
+            --gbr-panel: #0d0d0d;
+        }
+
+        body { 
+            background: var(--gbr-bg); color: var(--gbr-cyan); font-family: 'Segoe UI', sans-serif; 
+            border: 4px solid var(--gbr-cyan); box-shadow: inset 0 0 20px var(--gbr-cyan);
+            min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
+        }
+
+        .admin-wrapper { 
+            display: grid; 
+            grid-template-columns: 400px 1fr; 
+            gap: 20px; 
+            height: calc(100vh - 50px);
+        }
+
+        .sidebar, .main-content { 
+            background: var(--gbr-panel); 
+            border: 2px solid var(--gbr-cyan); 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.9);
+            overflow-y: auto;
+        }
+
+        h2 { color: var(--gbr-cyan); text-shadow: 0 0 10px var(--gbr-cyan); text-transform: uppercase; margin-top: 0; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        label { display: block; margin-top: 15px; font-weight: 900; font-size: 13px; color: #fff; }
+        
+        input, select { 
+            background: #000; color: #fff; border: 1px solid var(--gbr-cyan); 
+            padding: 12px; border-radius: 5px; margin-top: 5px; width: 100%; box-sizing: border-box;
+            font-weight: bold;
+        }
+
+        button { 
+            background: #000; color: var(--gbr-cyan); border: 2px solid var(--gbr-cyan); 
+            padding: 15px; font-weight: 900; cursor: pointer; border-radius: 8px;
+            box-shadow: 0 4px 0 #0a6b77; transition: 0.2s; width: 100%; margin-top: 10px;
+        }
+
+        button:active { transform: translateY(3px); box-shadow: 0 1px 0 #0a6b77; }
+        .btn-add { background: var(--gbr-cyan); color: #000; }
+        .btn-save { background: #d62225; color: #fff; border-color: #fff; }
+        .btn-back { background: #444; color: #fff; border-color: #666; text-decoration: none; display: block; text-align: center; line-height: 1.5; font-size: 14px; }
+
+        .cat-title { background: #222; color: var(--gbr-cyan); padding: 10px; margin: 20px 0 10px 0; font-weight: 900; border-left: 5px solid var(--gbr-cyan); }
+        .item-card { 
+            background: #111; border-bottom: 1px solid #222; padding: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        .item-info b { font-size: 18px; color: #fff; }
+        .item-info span { color: var(--gbr-cyan); margin-left: 10px; }
+        .btn-del { background: transparent; color: #ff4444; border: 1px solid #ff4444; width: auto; padding: 5px 15px; font-size: 12px; box-shadow: none; }
+        .btn-mod { background: transparent; color: var(--gbr-cyan); border: 1px solid var(--gbr-cyan); width: auto; padding: 5px 15px; font-size: 12px; box-shadow: none; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <div class="sidebar">
+        <h2 id="formTitle">1. ΠΡΟΣΘΗΚΗ</h2>
+        
+        <label>ΟΝΟΜΑ ΠΡΟΪΟΝΤΟΣ</label>
+        <input type="text" id="pName" placeholder="π.χ. ΠΑΝΣΕΤΑ ΜΕΡΙΔΑ">
+
+        <label>ΤΙΜΗ (€)</label>
+        <input type="number" id="pPrice" step="0.10" placeholder="0.00">
+
+        <label>ΚΑΤΗΓΟΡΙΑ</label>
+        <select id="pCat">
+            <option>ΟΡΕΚΤΙΚΑ</option><option>ΣΑΛΑΤΕΣ</option>
+            <option>ΣΧΑΡΑΣ</option><option>ΤΕΜΑΧΙΑ</option><option>ΣΠΕΣΙΑΛ</option><option>ΜΑΓΕΙΡΕΥΤΑ</option>
+            <option>ΘΑΛΑΣΣΙΝΑ</option><option>ΣΑΝΤΟΥΙΤΣ</option><option>ΟΥΖΑ ΤΣΙΠΟΥΡΑ</option><option>ΜΠΥΡΕΣ</option>
+            <option>ΚΡΑΣΙΑ ΡΕΤΣΙΝΕΣ</option><option>ΑΝΑΨΥΚΤΙΚΑ</option><option>ΧΡΕΩΣΕΙΣ</option>
+        </select>
+
+        <label>EXTRAS (Με κόμμα ,)</label>
+        <input type="text" id="pExtras" placeholder="π.χ. ΤΖΑΤΖΙΚΙ,ΚΕΤΣΑΠ">
+
+        <button class="btn-add" id="mainBtn" onclick="addItem()">+ ΠΡΟΣΘΗΚΗ ΣΤΗ ΛΙΣΤΑ</button>
+        <button class="btn-save" onclick="saveToCloud()">🚀 ΑΠΟΣΤΟΛΗ ΣΕ PC & PDA</button>
+        
+        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+        
+        <input type="file" id="fileInp" style="display:none" onchange="importFile(event)">
+        <button style="font-size: 12px; border-color: #555;" onclick="document.getElementById('fileInp').click()">📥 ΕΙΣΑΓΩΓΗ BACKUP</button>
+        <button style="font-size: 12px; border-color: #555;" onclick="downloadBackup()">📤 ΛΗΨΗ BACKUP</button>
+        
+        <button class="btn-back" onclick="window.location.href='index.html'">⬅ ΕΠΙΣΤΡΟΦΗ ΣΤΟ POS</button>
+    </div>
+
+    <div class="main-content">
+        <h2>ΥΠΑΡΧΟΝΤΑ ΠΡΟΪΟΝΤΑ</h2>
+        <div id="itemsList"></div>
+    </div>
+</div>
+		<div class="setting-item" style="margin-top:20px; padding:10px; border:1px solid var(--gbr-cyan);">
+    <label>ΑΝΤΙΓΡΑΦΑ ΚΟΥΖΙΝΑΣ:</label>
+    <select id="print-copies" onchange="savePrintConfig()" style="background:#000; color:#fff; padding:5px;">
+        <option value="1">1 Αντίγραφο</option>
+        <option value="2">2 Αντίγραφα (Διπλή)</option>
+        <option value="3">3 Αντίγραφα</option>
+    </select>
+</div>
+
+<script>
+    let products = JSON.parse(localStorage.getItem('roxani_products')) || [];
+    let editIndex = -1;
+
+    function renderList() {
+        const listDiv = document.getElementById('itemsList');
+        listDiv.innerHTML = "";
+        
+        if (products.length === 0) {
+            listDiv.innerHTML = "<p style='color:#666; padding:20px;'>Η λίστα είναι άδεια. Προσθέστε το πρώτο σας προϊόν!</p>";
+            return;
+        }
+
+        const grouped = {};
+        products.forEach((p, index) => {
+            let c = p.category || "ΔΙΑΦΟΡΑ";
+            if(!grouped[c]) grouped[c] = [];
+            grouped[c].push({...p, originalIndex: index});
+        });
+
+        const categoriesOrder = ["ΟΡΕΚΤΙΚΑ", "ΣΑΛΑΤΕΣ", "ΣΧΑΡΑΣ", "ΤΕΜΑΧΙΑ", "ΣΠΕΣΙΑΛ", "ΜΑΓΕΙΡΕΥΤΑ", "ΘΑΛΑΣΣΙΝΑ", "ΣΑΝΤΟΥΙΤΣ", "ΟΥΖΑ ΤΣΙΠΟΥΡΑ", "ΜΠΥΡΕΣ", "ΚΡΑΣΙΑ ΡΕΤΣΙΝΕΣ", "ΑΝΑΨΥΚΤΙΚΑ", "ΧΡΕΩΣΕΙΣ"];
+
+        categoriesOrder.forEach(cat => {
+            if(grouped[cat]) {
+                const title = document.createElement('div');
+                title.className = "cat-title";
+                title.innerText = cat;
+                listDiv.appendChild(title);
+                
+                grouped[cat].forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = "item-card";
+                    row.innerHTML = `
+                        <div class="item-info">
+                            <b>${item.name}</b>
+                            <span>${item.price.toFixed(2)}€</span>
+                        </div>
+                        <div>
+                            <button class="btn-mod" onclick="prepareEdit(${item.originalIndex})">ΜΕΤΑΒΟΛΗ</button>
+                            <button class="btn-del" onclick="deleteItem(${item.originalIndex})">ΔΙΑΓΡΑΦΗ</button>
+                        </div>
+                    `;
+                    listDiv.appendChild(row);
+                });
+            }
+        });
+    }
+
+    function addItem() {
+        const nameInput = document.getElementById('pName');
+        const priceInput = document.getElementById('pPrice');
+        const catInput = document.getElementById('pCat');
+        const extrasInput = document.getElementById('pExtras');
+
+        const name = nameInput.value.trim();
+        const price = parseFloat(priceInput.value);
+        const cat = catInput.value;
+        const extras = extrasInput.value ? extrasInput.value.split(',').map(e => e.trim()) : [];
+
+        if(!name || isNaN(price)) return alert("Συμπλήρωσε Όνομα και Τιμή!");
+
+        if(editIndex === -1) {
+            products.push({ name, price, category: cat, extras });
+        } else {
+            products[editIndex] = { name, price, category: cat, extras };
+            editIndex = -1;
+            document.getElementById('mainBtn').innerText = "+ ΠΡΟΣΘΗΚΗ ΣΤΗ ΛΙΣΤΑ";
+            document.getElementById('formTitle').innerText = "1. ΠΡΟΣΘΗΚΗ";
+        }
+
+        localStorage.setItem('roxani_products', JSON.stringify(products));
+        nameInput.value = "";
+        priceInput.value = "";
+        extrasInput.value = "";
+        renderList();
+    }
+
+    function prepareEdit(index) {
+        editIndex = index;
+        const p = products[index];
+        document.getElementById('pName').value = p.name;
+        document.getElementById('pPrice').value = p.price;
+        document.getElementById('pCat').value = p.category;
+        document.getElementById('pExtras').value = p.extras ? p.extras.join(',') : "";
+        
+        document.getElementById('mainBtn').innerText = "✅ ΕΝΗΜΕΡΩΣΗ";
+        document.getElementById('formTitle').innerText = "ΔΙΟΡΘΩΣΗ: " + p.name;
+        window.scrollTo(0,0);
+    }
+
+    function deleteItem(index) {
+        if(confirm("Διαγραφή προϊόντος;")) {
+            products.splice(index, 1);
+            localStorage.setItem('roxani_products', JSON.stringify(products));
+            renderList();
+        }
+    }
+
+    async function saveToCloud() {
+        try {
+            const res1 = await fetch('sync.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ products: products })
+            });
+            const res2 = await fetch('save_menu.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(products)
+            });
+            if(res1.ok || res2.ok) alert("✅ Το μενού στάλθηκε επιτυχώς!");
+            else alert("⚠️ Σφάλμα αποστολής.");
+        } catch(e) { alert("❌ Σφάλμα σύνδεσης."); }
+    }
+
+    function downloadBackup() {
+        const blob = new Blob([JSON.stringify(products, null, 2)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "roxani_backup.json";
+        a.click();
+    }
+
+    function importFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                products = JSON.parse(e.target.result);
+                localStorage.setItem('roxani_products', JSON.stringify(products));
+                renderList();
+                alert("✅ Backup φορτώθηκε!");
+            } catch(err) { alert("❌ Άκυρο αρχείο backup."); }
+        };
+        reader.readAsText(file);
+    }
+
+    // Φόρτωση λίστας με το που ανοίγει η σελίδα
+    renderList();
+</script>
+</body>
+</html>

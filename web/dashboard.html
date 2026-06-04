@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ρωξάνη - Web Orders Dashboard (Full POS Integration)</title>
+    <style>
+        * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        body { background: #121212; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Header */
+        header { background: #1a1a1a; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #20dcf5; }
+        .logo-title { font-size: 24px; font-weight: bold; color: #20dcf5; }
+        .btn-back { background: #ff4444; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+
+        /* Main 3-Column Layout */
+        .main-workspace { display: flex; flex: 1; overflow: hidden; width: 100%; }
+        
+        /* ΣΤΗΛΗ 1: Λίστα Παραγγελιών */
+        .col-orders { width: 25%; background: #1e1e1e; border-right: 2px solid #333; overflow-y: auto; padding: 10px; }
+        .col-title { font-size: 16px; padding: 5px 0 10px 0; color: #aaa; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid #333; margin-bottom: 10px; }
+        .order-card { background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 6px solid #f5cd1c; cursor: pointer; }
+        .order-card.active { background: #333; border-color: #20dcf5; box-shadow: 0 0 8px rgba(32,220,245,0.3); }
+        .order-card-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-bottom: 3px; }
+        .order-time { color: #20dcf5; }
+
+        /* ΣΤΗΛΗ 2: Νέα Μεγάλη Φόρμα & Καλάθι */
+        .col-details { width: 30%; background: #1b1b1b; border-right: 2px solid #333; display: flex; flex-direction: column; padding: 15px; overflow-y: auto; gap: 15px; }
+        
+        /* Φόρμα Στοιχείων Πελάτη (Από το POS σου) */
+        .delivery-form-box { background: #2a2a2a; border: 3px solid #030202; padding: 15px; border-radius: 10px; box-sizing: border-box; }
+        .delivery-form-box h3 { color: #f8f4f4; margin: 0 0 10px 0; font-size: 14px; text-align: center; font-weight: bold; text-transform: uppercase; }
+        .delivery-form-box input { width: 100%; padding: 10px; margin-bottom: 8px; background: #eaeff1; border: 1px solid #3d433e; box-sizing: border-box; border-radius: 4px; font-weight: bold; font-size: 15px; }
+        #delPhone { color: #f80707; }
+        #delName, #delAddress, #delFloor, #delNotes { color: #000; }
+
+        .items-box { background: #222; padding: 12px; border-radius: 8px; border: 1px solid #444; flex: 1; display: flex; flex-direction: column; overflow-y: auto; min-height: 200px; }
+        .items-box h3 { color: #ffaa00; margin-bottom: 10px; font-size: 16px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px; border-bottom: 1px solid #333; font-size: 15px; cursor: pointer; border-radius: 4px; }
+        .item-row.selected-for-change { background: #3a3010; border: 1px dashed #ffc107; }
+        .item-row:hover { background: #2c2c2c; }
+        .badge-change { background: #ffc107; color: black; font-size: 11px; padding: 2px 5px; border-radius: 4px; font-weight: bold; margin-left: 8px; }
+
+        /* ΣΤΗΛΗ 3: Μενού */
+        .col-menu { width: 45%; background: #1a1a1a; display: flex; flex-direction: column; padding: 15px; }
+        .menu-workspace-inner { display: flex; flex-direction: row-reverse; flex: 1; overflow: hidden; gap: 10px; }
+        .menu-cats-vertical { width: 30%; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        .btn-menu-cat { background: #2a2a2a; color: white; border: 1px solid #444; padding: 12px 4px; font-weight: bold; font-size: 12px; border-radius: 5px; cursor: pointer; text-align: center; text-transform: uppercase; }
+        .btn-menu-cat.active { background: #20dcf5; color: black; border-color: #20dcf5; }
+        .menu-products-container { width: 70%; display: flex; flex-direction: column; }
+        .menu-products-list { flex: 1; background: #222; border-radius: 8px; border: 1px solid #444; padding: 10px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; align-content: start; }
+        .btn-menu-prod { background: #2e2e2e; color: white; border: 1px solid #555; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: left; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 65px; }
+        .btn-menu-prod span { color: #20dcf5; font-size: 12px; margin-top: 4px; }
+
+        /* Actions Bar */
+        .actions-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #1a1a1a; padding: 12px 10px; border-top: 2px solid #333; }
+        .btn-action { padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.3; }
+        .btn-accept { background: #28a745; color: white; }
+        .btn-reprint { background: #17a2b8; color: white; }
+        .btn-reject { background: #dc3545; color: white; }
+    </style>
+</head>
+<body onload="initDashboard()">
+
+    <header>
+        <button class="btn-back" onclick="window.location.href='../index.html'">🔙 ΕΠΙΣΤΡΟΦΗ ΣΤΟ POS</button>
+        <div class="logo-title">🌐 WEB ORDERS (ΔΙΑΧΕΙΡΙΣΗ)</div>
+    </header>
+
+    <div class="main-workspace">
+        
+        <div class="col-orders" id="ordersContainer">
+            <div class="col-title">📥 Νέες Online Παραγγελίες</div>
+        </div>
+
+        <div class="col-details">
+            
+            
+            <div class="delivery-form-box">
+                <h3>📍 ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</h3>
+                <input id="delPhone" placeholder="ΤΗΛΕΦΩΝΟ">
+                <input id="delName" placeholder="ΟΝΟΜΑ">
+                
+                <div style="position: relative;">
+                    <input id="delAddress" placeholder="ΔΙΕΥΘΥΝΣΗ" autocomplete="off" oninput="searchStreet(this.value)">
+                    <div id="street-suggestions" style="position: absolute; top: 38px; left: 0; width: 100%; max-height: 200px; overflow-y: auto; background: #222; border: 2px solid #030202; z-index: 999; display: none; border-radius: 5px;"></div>
+                </div>
+                
+                <input id="delFloor" placeholder="ΟΡΟΦΟΣ">
+                <input id="delNotes" placeholder="ΣΧΟΛΙΑ">
+                <button onclick="sendOrderToPOS();" style="width: 100%; background: #f6b504; color: #090909; padding: 12px; font-size:18px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer;">🚀 ΕΝΑΡΞΗ DELIVERY ΣΤΟ POS</button>
+            </div>
+
+            <div class="items-box">
+                <h3>🛒 Προϊόντα Παραγγελίας</h3>
+                <div id="orderItemsList" style="display: flex; flex-direction: column; gap: 5px;"></div>
+            </div>
+        </div>
+
+        <div class="col-menu">
+            <div class="col-title">🍕 Κατάλογος Προϊόντων</div>
+            <div class="menu-workspace-inner">
+                <div class="menu-cats-vertical" id="menuCategories"></div>
+                <div class="menu-products-container">
+                    <div class="menu-products-list" id="menuProducts"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="actions-bar">
+        <button class="btn-action btn-accept" onclick="sendOrderToPOS()">✅ ΑΠΟΔΟΧΗ & ΑΠΟΣΤΟΛΗ ΣΤΟ POS</button>
+        <button class="btn-action btn-reprint" onclick="alert('Μπορείτε να κάνετε επανεκτύπωση απευθείας από την οθόνη του POS!')">🖨️ ΟΔΗΓΙΕΣ ΕΠΑΝΕΚΤΥΠΩΣΗΣ</button>
+        <button class="btn-action btn-reject" onclick="rejectOrder()">❌ ΑΠΟΡΡΙΨΗ / ΣΒΗΣΙΜΟ</button>
+    </div>
+
+    <script>
+        const CAT_ORDER = ["ΟΡΕΚΤΙΚΑ", "ΣΑΛΑΤΕΣ", "ΣΧΑΡΑΣ", "ΤΕΜΑΧΙΑ", "ΣΠΕΣΙΑΛ", "ΜΑΓΕΙΡΕΥΤΑ", "ΘΑΛΑΣΣΙΝΑ", "ΣΑΝΤΟΥΙΤΣ", "ΟΥΖΑ ΤΣΙΠΟΥΡΑ", "ΜΠΥΡΕΣ", "ΚΡΑΣΙΑ ΡΕΤΣΙΝΕΣ", "ΑΝΑΨΥΚΤΙΚΑ", "ΧΡΕΩΣΕΙΣ"];
+        let products = [];
+        let webOrders = [];
+        let activeOrder = null;
+        let selectedItemIndexForChange = null;
+
+        // Δειγματική Web Παραγγελία
+        let demoWebOrders = [{
+            id: 1024,
+            customer: "Γιάννης Π.",
+            phone: "2321400029",
+            address: "Βενιζέλου 45",
+            floor: "3ος Όροφος",
+            comments: "Όχι κρεμμύδι στη σαλάτα",
+            time: "21:15",
+            items: [
+                { n: "ΠΑΤΑΤΕΣ ΤΗΓΑΝΗΤΕΣ", p: 3.00, q: 1, ext: "" },
+                { n: "ΣΕΦ ΣΑΛΑΤΑ", p: 7.00, q: 1, ext: "" }
+            ]
+        }];
+
+        async function initDashboard() {
+            webOrders = demoWebOrders;
+            await loadMenuData();
+            renderOrders();
+            if(webOrders.length > 0) selectOrder(webOrders[0].id);
+        }
+
+        // 🔄 ΣΥΓΧΡΟΝΙΣΜΟΣ ΜΕΝΟΥ: Διαβάζει LIVE από το φάκελο που παράγεται από το saveToCloud
+        async function loadMenuData() {
+            try {
+                // Αν το Admin αποθηκεύει κάπου αλλού, αλλάζεις τη διαδρομή εδώ (π.χ. '../admin/menu_data.json')
+                const res = await fetch('menu_data.json?v=' + new Date().getTime()); 
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    products = data;
+                    renderCategories();
+                }
+            } catch (e) {
+                console.error("Σφάλμα live συγχρονισμού μενού:", e);
+            }
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('menuCategories');
+            if (!container || !products.length) return;
+            let uniqueCats = [...new Set(products.map(p => p.category))].filter(Boolean);
+            uniqueCats.sort((a, b) => (CAT_ORDER.indexOf(a) === -1 ? 999 : CAT_ORDER.indexOf(a)) - (CAT_ORDER.indexOf(b) === -1 ? 999 : CAT_ORDER.indexOf(b)));
+            container.innerHTML = uniqueCats.map((cat, idx) => `<button class="btn-menu-cat ${idx === 0 ? 'active' : ''}" onclick="selectCategory('${cat}', this)">${cat}</button>`).join('');
+            if (uniqueCats.length > 0) renderProducts(uniqueCats[0]);
+        }
+
+        function selectCategory(cat, btn) {
+            document.querySelectorAll('.btn-menu-cat').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderProducts(cat);
+        }
+
+        function renderProducts(cat) {
+            const container = document.getElementById('menuProducts');
+            if (!container) return;
+            container.innerHTML = products.filter(p => p.category === cat).map(p => `
+                <button class="btn-menu-prod" onclick="replaceOrAddItem('${p.name}', ${p.price})">
+                    ${p.name}<span>${parseFloat(p.price).toFixed(2)}€</span>
+                </button>
+            `).join('');
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('ordersContainer');
+            container.innerHTML = '<div class="col-title">📥 Νέες Online Παραγγελίες</div>';
+            webOrders.forEach(o => {
+                let total = o.items.reduce((sum, item) => sum + (item.p * item.q), 0);
+                let card = document.createElement('div');
+                card.className = `order-card ${activeOrder && activeOrder.id === o.id ? 'active' : ''}`;
+                card.onclick = () => selectOrder(o.id);
+                card.innerHTML = `<div class="order-card-header"><span>#${o.id} - ${o.customer}</span><span class="order-time">${o.time}</span></div><div style="font-size:13px; color:#ccc;">${o.address}</div><div style="margin-top:5px; color:#f5cd1c; font-weight:bold;">${total.toFixed(2)}€</div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function selectOrder(id) {
+            activeOrder = webOrders.find(o => o.id === id);
+            selectedItemIndexForChange = null;
+            if(!activeOrder) return;
+
+            // Γέμισμα των 5 πεδίων της μεγάλης φόρμας αυτόματα
+            document.getElementById('delPhone').value = activeOrder.phone || "";
+            document.getElementById('delName').value = activeOrder.customer || "";
+            document.getElementById('delAddress').value = activeOrder.address || "";
+            document.getElementById('delFloor').value = activeOrder.floor || "";
+            document.getElementById('delNotes').value = activeOrder.comments || "";
+
+            renderOrderItems();
+            renderOrders();
+        }
+
+        function renderOrderItems() {
+            const container = document.getElementById('orderItemsList');
+            container.innerHTML = ""; if(!activeOrder) return;
+            activeOrder.items.forEach((item, index) => {
+                let row = document.createElement('div');
+                row.className = `item-row ${selectedItemIndexForChange === index ? 'selected-for-change' : ''}`;
+                row.onclick = () => { selectedItemIndexForChange = index; renderOrderItems(); };
+                row.innerHTML = `<div><b>${item.q} x</b> ${item.n} <span class="badge-change">✏️</span></div>
+                                 <div style="display:flex; align-items:center; gap:10px;"><button onclick="deleteItem(event, ${index})" style="background:none; border:none; color:#ff5555; font-size:18px; cursor:pointer;">✖</button><b>${(item.p * item.q).toFixed(2)}€</b></div>`;
+                container.appendChild(row);
+            });
+        }
+
+        function replaceOrAddItem(newName, newPrice) {
+            if (!activeOrder) return;
+            if (selectedItemIndexForChange !== null) {
+                activeOrder.items[selectedItemIndexForChange].n = newName;
+                activeOrder.items[selectedItemIndexForChange].p = parseFloat(newPrice);
+                selectedItemIndexForChange = null;
+            } else {
+                activeOrder.items.push({ n: newName, p: parseFloat(newPrice), q: 1, ext: "" });
+            }
+            renderOrderItems();
+        }
+
+        function deleteItem(event, index) {
+            event.stopPropagation();
+            if(confirm("Διαγραφή προϊόντος;")) { activeOrder.items.splice(index, 1); selectedItemIndexForChange = null; renderOrderItems(); }
+        }
+
+        function searchStreet(val) {
+            // Εδώ μπαίνει η συνάρτηση προτάσεων οδών από το POS σου
+            let sug = document.getElementById('street-suggestions');
+            if(val.length < 2) { sug.style.display = 'none'; return; }
+            // Demo εμφάνιση
+            sug.innerHTML = `<div style="padding:10px; color:#fff; cursor:pointer;" onclick="document.getElementById('delAddress').value='${val} '; document.getElementById('street-suggestions').style.display='none';">📍 ${val} (Προτεινόμενος Δρόμος)</div>`;
+            sug.style.display = 'block';
+        }
+
+        // 🚀 Η ΓΕΦΥΡΑ: Στέλνει τα στοιχεία της φόρμας και τα προϊόντα στο localStorage ή στη βάση του κεντρικού POS
+        function sendOrderToPOS() {
+            if (!activeOrder) return alert("Δεν υπάρχει επιλεγμένη παραγγελία!");
+
+            const phone = document.getElementById('delPhone').value.trim();
+            const name = document.getElementById('delName').value.trim();
+            const address = document.getElementById('delAddress').value.trim();
+            const floor = document.getElementById('delFloor').value.trim();
+            const notes = document.getElementById('delNotes').value.trim();
+
+            if(!phone || !name || !address) {
+                return alert("⚠️ Παρακαλώ συμπληρώστε τουλάχιστον Τηλέφωνο, Όνομα και Διεύθυνση!");
+            }
+
+            // Δημιουργία δομής τραπεζιού DELIVERY για το κεντρικό POS
+            const tableName = "DELIVERY #" + activeOrder.id;
+            
+            // 1. Προετοιμασία των προϊόντων στη μορφή που διαβάζει το app.js του POS
+            let posItems = [];
+            activeOrder.items.forEach(it => {
+                for(let i=0; i<it.q; i++) {
+                    posItems.push({
+                        n: it.n,
+                        p: parseFloat(it.p),
+                        printed: false, // 🎯 Για να πάρει εντολή εκτύπωσης μόλις ανοίξει στο POS!
+                        category: products.find(p => p.name === it.n.split('+')[0].trim())?.category || "ΧΡΕΩΣΕΙΣ"
+                    });
+                }
+            });
+
+            // 2. Τράβηγμα των υπαρχόντων τραπεζιών από το localStorage του POS
+            let allTablesData = JSON.parse(localStorage.getItem('gbr_tables_data') || "{}");
+            
+            // 3. Εγγραφή της νέας παραγγελίας στο POS
+            allTablesData[tableName] = posItems;
+            allTablesData[tableName + "_info"] = { phone, name, address, floor, notes };
+            
+            localStorage.setItem('gbr_tables_data', JSON.stringify(allTablesData));
+
+            alert("✨ Η παραγγελία στάλθηκε επιτυχώς στο POS!\nΘα τη βρείτε στα ανοιχτά τραπέζια ως '" + tableName + "'.");
+
+            // Καθαρισμός από τη λίστα web orders
+            webOrders = webOrders.filter(o => o.id !== activeOrder.id);
+            renderOrders();
+            if (webOrders.length > 0) selectOrder(webOrders[0].id);
+            else {
+                activeOrder = null;
+                document.getElementById('delPhone').value = "";
+                document.getElementById('delName').value = "";
+                document.getElementById('delAddress').value = "";
+                document.getElementById('delFloor').value = "";
+                document.getElementById('delNotes').value = "";
+                document.getElementById('orderItemsList').innerHTML = "";
+            }
+        }
+
+        function rejectOrder() {
+            if(!activeOrder || !confirm("Σβήσιμο/Απόρριψη της παραγγελίας από την οθόνη;")) return;
+            webOrders = webOrders.filter(o => o.id !== activeOrder.id);
+            renderOrders();
+            if(webOrders.length > 0) selectOrder(webOrders[0].id);
+            else { activeOrder = null; selectOrder(null); }
+        }
+    </script>
+</body>
+</html>

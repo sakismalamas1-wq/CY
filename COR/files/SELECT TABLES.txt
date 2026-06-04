@@ -1,0 +1,33 @@
+/* ΠΡΑΣΙΝΟ ΣΧΟΛΙΟ: ΕΠΙΛΟΓΗ ΤΡΑΠΕΖΙΟΥ ΜΕ DELIVERY & ΦΩΤΙΣΜΟ ΤΙΤΛΟΥ */
+async function selectTable(name) {
+    if(window.navigator.vibrate) window.navigator.vibrate(20);
+    lockUI();
+    selectedTable = name;
+    
+    await fetchSync();
+    
+    // ΠΡΑΣΙΝΟ ΣΧΟΛΙΟ: ΕΔΩ ΕΝΗΜΕΡΩΝΟΥΜΕ ΤΟΝ ΤΙΤΛΟ ΠΑΝΩ ΑΠΟ ΤΗΝ ΑΠΟΔΕΙΞΗ
+    const title = document.getElementById('tableTitle');
+    if(title) {
+        title.innerText = name;
+        title.style.background = "#d62225"; // Κόκκινο Disco για να ξέρεις πού είσαι
+        title.style.color = "#fff";
+        title.style.padding = "10px";
+        title.style.fontWeight = "bold";
+    }
+
+    // Καθαρισμός & Φόρτωση Delivery Info
+    clearDeliveryFields();
+    if(allTablesData[name + "_info"]) {
+        const info = allTablesData[name + "_info"];
+        if(document.getElementById('delPhone')) document.getElementById('delPhone').value = info.phone || "";
+        if(document.getElementById('delName')) document.getElementById('delName').value = info.name || "";
+        if(document.getElementById('delAddress')) document.getElementById('delAddress').value = info.addr || "";
+        if(document.getElementById('delFloor')) document.getElementById('delFloor').value = info.floor || "";
+        if(document.getElementById('delNotes')) document.getElementById('delNotes').value = info.notes || "";
+    }
+
+    currentOrder = [...(allTablesData[name] || [])]; 
+    renderOrder();
+    renderTables(); // Ξανατρέχει για να "ανάψει" το κουμπί του τραπεζιού
+}

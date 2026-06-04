@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>1000 v2 Admin</title>
+    <style>
+        :root {
+            --gbr-cyan: #20dcf5;
+            --gbr-dark: #000000;
+            --gbr-bg: #050505;
+            --gbr-panel: #0d0d0d;
+        }
+
+        body { 
+            background: var(--gbr-bg); color: var(--gbr-cyan); font-family: 'Segoe UI', sans-serif; 
+            border: 4px solid var(--gbr-cyan); box-shadow: inset 0 0 20px var(--gbr-cyan);
+            min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
+        }
+
+        .admin-wrapper { 
+            display: grid; 
+            grid-template-columns: 400px 1fr; 
+            gap: 20px; 
+            height: calc(100vh - 50px);
+        }
+
+        .sidebar, .main-content { 
+            background: var(--gbr-panel); 
+            border: 2px solid var(--gbr-cyan); 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.9);
+            overflow-y: auto;
+        }
+
+        h2 { color: var(--gbr-cyan); text-shadow: 0 0 10px var(--gbr-cyan); text-transform: uppercase; margin-top: 0; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        label { display: block; margin-top: 15px; font-weight: 900; font-size: 13px; color: #fff; }
+        
+        input, select { 
+            background: #000; color: #fff; border: 1px solid var(--gbr-cyan); 
+            padding: 12px; border-radius: 5px; margin-top: 5px; width: 100%; box-sizing: border-box;
+            font-weight: bold;
+        }
+
+        button { 
+            background: #000; color: var(--gbr-cyan); border: 2px solid var(--gbr-cyan); 
+            padding: 15px; font-weight: 900; cursor: pointer; border-radius: 8px;
+            box-shadow: 0 4px 0 #0a6b77; transition: 0.2s; width: 100%; margin-top: 10px;
+        }
+
+        button:active { transform: translateY(3px); box-shadow: 0 1px 0 #0a6b77; }
+        .btn-add { background: var(--gbr-cyan); color: #000; }
+        .btn-save { background: #d62225; color: #fff; border-color: #fff; }
+        .btn-back { background: #444; color: #fff; border-color: #666; text-decoration: none; display: block; text-align: center; line-height: 1.5; font-size: 14px; }
+
+        .cat-title { background: #222; color: var(--gbr-cyan); padding: 10px; margin: 20px 0 10px 0; font-weight: 900; border-left: 5px solid var(--gbr-cyan); }
+        .item-card { 
+            background: #111; border-bottom: 1px solid #222; padding: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        .item-info b { font-size: 18px; color: #fff; }
+        .item-info span { color: var(--gbr-cyan); margin-left: 10px; }
+        .btn-del { background: transparent; color: #ff4444; border: 1px solid #ff4444; width: auto; padding: 5px 15px; font-size: 12px; box-shadow: none; }
+        .btn-mod { background: transparent; color: var(--gbr-cyan); border: 1px solid var(--gbr-cyan); width: auto; padding: 5px 15px; font-size: 12px; box-shadow: none; margin-right: 5px; }
+        
+        /* Style για το νέο Panel ρυθμίσεων */
+        .settings-panel {
+            background: #111; border: 2px dashed var(--gbr-cyan); border-radius: 10px;
+            padding: 15px; margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <div class="sidebar">
+        <h2 id="formTitle">1. ΠΡΟΣΘΗΚΗ</h2>
+        
+        <label>ΟΝΟΜΑ ΠΡΟΪΟΝΤΟΣ</label>
+        <input type="text" id="pName" placeholder="π.χ. ΠΑΝΣΕΤΑ ΜΕΡΙΔΑ">
+
+        <label>ΤΙΜΗ (€)</label>
+        <input type="number" id="pPrice" step="0.10" placeholder="0.00">
+
+        <label>ΚΑΤΗΓΟΡΙΑ</label>
+        <select id="pCat">
+            <option>ΟΡΕΚΤΙΚΑ</option><option>ΣΑΛΑΤΕΣ</option>
+            <option>ΣΧΑΡΑΣ</option><option>ΤΕΜΑΧΙΑ</option><option>ΣΠΕΣΙΑΛ</option><option>ΜΑΓΕΙΡΕΥΤΑ</option>
+            <option>ΘΑΛΑΣΣΙΝΑ</option><option>ΟΥΖΑ ΤΣΙΠΟΥΡΑ</option><option>ΜΠΥΡΕΣ</option>
+            <option>ΚΡΑΣΙΑ ΡΕΤΣΙΝΕΣ</option><option>ΑΝΑΨΥΚΤΙΚΑ</option><option>ΣΑΝΤΟΥΙΤΣ</option><option>ΧΡΕΩΣΕΙΣ</option>
+        </select>
+
+        <label>EXTRAS (Με κόμμα ,)</label>
+        <input type="text" id="pExtras" placeholder="π.χ. ΤΖΑΤΖΙΚΙ,ΚΕΤΣΑΠ">
+
+        <button class="btn-add" id="mainBtn" onclick="addItem()">+ ΠΡΟΣΘΗΚΗ ΣΤΗ ΛΙΣΤΑ</button>
+        <button class="btn-save" onclick="saveToCloud()">🚀 ΑΠΟΣΤΟΛΗ ΣΕ PC & PDA</button>
+        
+        <div class="settings-panel">
+            <h3 style="margin-top:0; font-size:16px;">🎨 ΕΜΦΑΝΙΣΗ & ΜΕΓΕΘΗ</h3>
+            
+            <lab<label>ΓΡΑΜΜΑΤΑ DELIVERY</label>
+            <input type="range" id="slider-delivery" min="14" max="35" value="18" oninput="updateStyle('--delivery-font-size', this.value + 'px')">
+            <span id="val--delivery-font-size">18px</span>
+
+            <label>ΓΡΑΜΜΑΤΑ ΕΚΤΥΠΩΣΗΣ</label>
+            <input type="range" id="slider-print" min="15" max="45" value="22" oninput="updateStyle('--print-font-size', this.value + 'px')">
+            <span id="val--print-font-size">22px</span>
+
+            <label>ΧΡΩΜΑ NEON</label>
+            <input type="color" value="#20dcf5" onchange="updateStyle('--gbr-cyan', this.value)">
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+        
+        <input type="file" id="fileInp" style="display:none" onchange="importFile(event)">
+        <button style="font-size: 12px; border-color: #555;" onclick="document.getElementById('fileInp').click()">📥 ΕΙΣΑΓΩΓΗ BACKUP</button>
+        <button style="font-size: 12px; border-color: #555;" onclick="downloadBackup()">📤 ΕΞΑΓΩΓΗ BACKUP</button>
+        
+        <button class="btn-back" onclick="window.location.href='index.html'">⬅ ΕΠΙΣΤΡΟΦΗ ΣΤΟ POS</button>
+    </div>
+
+    <div class="main-content">
+        <h2>ΥΠΑΡΧΟΝΤΑ ΠΡΟΪΟΝΤΑ</h2>
+        <div id="itemsList"></div>
+    </div>
+</div>
+<div style="background: #111; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #333;">
+    <h3 style="margin-top:0; font-size:14px; color:var(--gbr-cyan);">ΑΝΤΙΓΡΑΦΑ ΕΚΤΥΠΩΣΗΣ</h3>
+    
+    <label style="margin-top:5px;">ΚΟΥΖΙΝΑ (1-2)</label>
+    <input type="number" id="print-copies-kitchen" min="1" max="2" value="1" 
+           style="width: 60px; display: inline-block; margin-left: 10px;">
+
+    <label style="margin-top:10px;">ΤΑΜΕΙΟ (1-2)</label>
+    <input type="number" id="print-copies-total" min="1" max="2" value="1" 
+           style="width: 60px; display: inline-block; margin-left: 10px;">
+</div>
+
+<script>
+(function protectAdmin() {
+    const password = "0000"; // <-- Βάλε εδώ τον κωδικό που θέλεις
+    const sessionKey = "admin_authorized";
+
+    // Ελέγχουμε αν έχει ήδη δώσει τον κωδικό σε αυτό το session
+    if (sessionStorage.getItem(sessionKey) !== "true") {
+        let input = prompt("Παρακαλώ εισάγετε τον κωδικό πρόσβασης για το Admin:");
+        
+        if (input === password) {
+            sessionStorage.setItem(sessionKey, "true");
+        } else {
+            alert("Λάθος κωδικός! Πρόσβαση απαγορεύεται.");
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:20%; color:white;'>🔒 Πρόσβαση Απαγορεύεται</h1>";
+            window.stop(); // Σταματάει το φόρτωμα της σελίδας
+        }
+    }
+})();
+    let products = JSON.parse(localStorage.getItem('roxani_products')) || [];
+    let editIndex = -1;
+
+    // Η ΣΥΝΑΡΤΗΣΗ ΠΟΥ ΧΡΕΙΑΖΕΣΑΙ ΓΙΑ ΤΑ ΚΟΥΜΠΙΑ ΕΜΦΑΝΙΣΗΣ
+    function updateStyle(variable, value) {
+        document.documentElement.style.setProperty(variable, value);
+        const display = document.getElementById('val' + variable);
+        if(display) display.innerText = value;
+
+        // Σώζουμε τις ρυθμίσεις για να τις πάρει το PDA
+        const settings = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+        settings[variable] = value;
+        localStorage.setItem('gbr_ui_settings', JSON.stringify(settings));
+    }
+
+    function renderList() {
+        const listDiv = document.getElementById('itemsList');
+        listDiv.innerHTML = "";
+        
+        if (products.length === 0) {
+            listDiv.innerHTML = "<p style='color:#666; padding:20px;'>Η λίστα είναι άδεια.</p>";
+            return;
+        }
+
+        const grouped = {};
+        products.forEach((p, index) => {
+            let c = p.category || "ΧΡΕΩΣΕΙΣ";
+            if(!grouped[c]) grouped[c] = [];
+            grouped[c].push({...p, originalIndex: index});
+        });
+
+        const categoriesOrder = ["ΟΡΕΚΤΙΚΑ", "ΣΑΛΑΤΕΣ", "ΣΧΑΡΑΣ", "ΤΕΜΑΧΙΑ", "ΣΠΕΣΙΑΛ", "ΜΑΓΕΙΡΕΥΤΑ", "ΘΑΛΑΣΣΙΝΑ", "ΟΥΖΑ ΤΣΙΠΟΥΡΑ", "ΜΠΥΡΕΣ", "ΚΡΑΣΙΑ ΡΕΤΣΙΝΕΣ", "ΑΝΑΨΥΚΤΙΚΑ", "ΣΑΝΤΟΥΙΤΣ", "ΧΡΕΩΣΕΙΣ"];
+
+        categoriesOrder.forEach(cat => {
+            if(grouped[cat]) {
+                const title = document.createElement('div');
+                title.className = "cat-title";
+                title.innerText = cat;
+                listDiv.appendChild(title);
+                
+                grouped[cat].forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = "item-card";
+                    row.innerHTML = `
+                        <div class="item-info">
+                            <b>${item.name}</b>
+                            <span>${item.price.toFixed(2)}€</span>
+                        </div>
+                        <div>
+                            <button class="btn-mod" onclick="prepareEdit(${item.originalIndex})">ΜΕΤΑΒΟΛΗ</button>
+                            <button class="btn-del" onclick="deleteItem(${item.originalIndex})">ΔΙΑΓΡΑΦΗ</button>
+                        </div>
+                    `;
+                    listDiv.appendChild(row);
+                });
+            }
+        });
+    }
+
+    function addItem() {
+        const nameInput = document.getElementById('pName');
+        const priceInput = document.getElementById('pPrice');
+        const catInput = document.getElementById('pCat');
+        const extrasInput = document.getElementById('pExtras');
+
+        const name = nameInput.value.trim();
+        const price = parseFloat(priceInput.value);
+        const cat = catInput.value;
+        const extras = extrasInput.value ? extrasInput.value.split(',').map(e => e.trim()) : [];
+
+        if(!name || isNaN(price)) return alert("Συμπλήρωσε Όνομα και Τιμή!");
+
+        if(editIndex === -1) {
+            products.push({ name, price, category: cat, extras });
+        } else {
+            products[editIndex] = { name, price, category: cat, extras };
+            editIndex = -1;
+            document.getElementById('mainBtn').innerText = "+ ΠΡΟΣΘΗΚΗ ΣΤΗ ΛΙΣΤΑ";
+            document.getElementById('formTitle').innerText = "1. ΠΡΟΣΘΗΚΗ";
+        }
+
+        localStorage.setItem('roxani_products', JSON.stringify(products));
+        nameInput.value = "";
+        priceInput.value = "";
+        extrasInput.value = "";
+        renderList();
+    }
+
+    function prepareEdit(index) {
+        editIndex = index;
+        const p = products[index];
+        document.getElementById('pName').value = p.name;
+        document.getElementById('pPrice').value = p.price;
+        document.getElementById('pCat').value = p.category;
+        document.getElementById('pExtras').value = p.extras ? p.extras.join(',') : "";
+        
+        document.getElementById('mainBtn').innerText = "✅ ΕΝΗΜΕΡΩΣΗ";
+        document.getElementById('formTitle').innerText = "ΔΙΟΡΘΩΣΗ: " + p.name;
+        window.scrollTo(0,0);
+    }
+
+    function deleteItem(index) {
+        if(confirm("Διαγραφή προϊόντος;")) {
+            products.splice(index, 1);
+            localStorage.setItem('roxani_products', JSON.stringify(products));
+            renderList();
+        }
+    }
+
+    function downloadBackup() {
+        const blob = new Blob([JSON.stringify(products, null, 2)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "roxani_backup.json";
+        a.click();
+    }
+
+    function importFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                products = JSON.parse(e.target.result);
+                localStorage.setItem('roxani_products', JSON.stringify(products));
+                renderList();
+                alert("✅ Backup φορτώθηκε!");
+            } catch(err) { alert("❌ Άκυρο αρχείο backup."); }
+        };
+        reader.readAsText(file);
+    }
+	// ΑΥΤΟ ΕΙΝΑΙ ΓΙΑ ΝΑ ΜΗΝ ΧΑΝΟΝΤΑΙ ΟΙ ΡΥΘΜΙΣΕΙΣ ΣΤΟ REFRESH ΤΟΥ ADMIN
+function loadSavedSettingsToSliders() {
+    const saved = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+    
+    // 1. Για το Delivery
+    if (saved['--delivery-font-size']) {
+        const val = saved['--delivery-font-size'].replace('px', '');
+        const sliderDel = document.getElementById('slider-delivery');
+        if(sliderDel) {
+            sliderDel.value = val;
+            document.getElementById('val--delivery-font-size').innerText = val + 'px';
+        }
+    }
+
+    // 2. Για την Εκτύπωση
+    if (saved['--print-font-size']) {
+        const val = saved['--print-font-size'].replace('px', '');
+        const sliderPrint = document.getElementById('slider-print');
+        if(sliderPrint) {
+            sliderPrint.value = val;
+            document.getElementById('val--print-font-size').innerText = val + 'px';
+        }
+    }
+
+    // 3. ΓΙΑ ΤΟ ΧΡΩΜΑ (Αυτό που έλειπε)
+    if (saved['--gbr-cyan']) {
+        const colorPicker = document.querySelector('input[type="color"]');
+        if(colorPicker) {
+            colorPicker.value = saved['--gbr-cyan'];
+        }
+        // Εφαρμογή και στο Admin live για να φαίνεται σωστά
+        document.documentElement.style.setProperty('--gbr-cyan', saved['--gbr-cyan']);
+    }
+}
+async function saveToCloud() {
+    const kitchenCopies = document.getElementById('print-copies-kitchen').value;
+    const totalCopies = document.getElementById('print-copies-total').value;
+
+    const dataToSend = {
+        products: products, // Το μενού σου όπως είναι
+        settings: {
+            kitchen_copies: kitchenCopies,
+            total_copies: totalCopies,
+            // ... οι υπόλοιπες ρυθμίσεις σου
+        }
+    };
+
+    const res = await fetch('sync.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(dataToSend)
+    });
+    
+    if(res.ok) alert("Συγχρονισμός OK με " + kitchenCopies + " αντίγραφα κουζίνας!");
+}
+function loadSavedSettings() {
+    const saved = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+    
+    if (saved.kitchen_copies) {
+        document.getElementById('print-copies-kitchen').value = saved.kitchen_copies;
+    }
+    if (saved.total_copies) {
+        document.getElementById('print-copies-total').value = saved.total_copies;
+    }
+    // ... το υπόλοιπο φόρτωμα χρωμάτων κτλ
+}
+// Πρόσθεσε αυτή τη συνάρτηση μέσα στο <script>
+async function loadProductsFromServer() {
+    try {
+        const res = await fetch('sync.php?v=' + Date.now());
+        const data = await res.json();
+        if (data && data.products) {
+            products = data.products;
+            localStorage.setItem('roxani_products', JSON.stringify(products));
+            renderList(); // Ενημέρωσε τη λίστα στην οθόνη
+        }
+    } catch (e) {
+        console.error("Αποτυχία φόρτωσης από server", e);
+    }
+}
+
+// Και κάλεσε την στο DOMContentLoaded
+window.addEventListener('DOMContentLoaded', () => {
+    loadSavedSettingsToSliders();
+    loadProductsFromServer(); // <--- Προσθήκη
+});
+
+// Μην ξεχάσεις να την καλείς στο τέλος
+window.addEventListener('DOMContentLoaded', loadSavedSettingsToSliders);
+
+    renderList();
+</script>
+</body>
+</html>

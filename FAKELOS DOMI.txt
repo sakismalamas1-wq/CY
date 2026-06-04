@@ -1,0 +1,23 @@
+htdocs/
+│
+├── index.php
+├── app.js
+├── products.json
+│
+├── accounting/
+│   ├── index.php
+│   ├── accounting.js
+│   ├── accounting.css
+│   │
+│   ├── api/
+│   │   ├── save_income.php
+│   │   ├── save_expense.php
+│   │   ├── get_income.php
+│   │   ├── get_expense.php
+│   │   └── get_summary.php
+│   │
+│   └── data/
+│       ├── income.json
+│       ├── expense.json
+│       ├── categories.json
+│       └── contacts.json

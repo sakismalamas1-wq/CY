@@ -1,0 +1,100 @@
+/* ΓΕΝΙΚΑ & ΧΡΩΜΑΤΑ */
+:root {
+    --primary: #e67e22; /* Πορτοκαλί της όρεξης */
+    --dark: #1a1a1a;
+    --light: #f4f4f4;
+    --success: #27ae60;
+}
+
+body {
+    margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light); color: var(--dark);
+    padding-bottom: 70px; /* Χώρος για τη μπάρα καλαθιού */
+}
+
+/* HEADER */
+header {
+    background: var(--dark); color: white;
+    padding: 15px; display: flex; justify-content: space-between;
+    align-items: center; position: sticky; top: 0; z-index: 100;
+}
+
+.logo { font-weight: bold; font-size: 20px; letter-spacing: 1px; }
+
+/* ΚΑΤΗΓΟΡΙΕΣ (SCROLLABLE) */
+nav#webCategories {
+    display: flex; overflow-x: auto; background: white;
+    padding: 10px; border-bottom: 1px solid #ddd; gap: 10px;
+    sticky; top: 55px; z-index: 99;
+}
+
+nav#webCategories button {
+    background: #eee; border: none; padding: 8px 15px;
+    border-radius: 20px; white-space: nowrap; font-weight: 600;
+}
+
+nav#webCategories button.active {
+    background: var(--primary); color: white;
+}
+
+/* ΠΡΟΪΟΝΤΑ */
+main#webMenu { padding: 10px; }
+
+.web-product-card {
+    background: white; border-radius: 10px; padding: 12px;
+    margin-bottom: 10px; display: flex; justify-content: space-between;
+    align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.prod-info h4 { margin: 0 0 5px 0; font-size: 16px; }
+.prod-info p { margin: 0; color: var(--primary); font-weight: bold; }
+
+.btn-add {
+    background: var(--primary); color: white; border: none;
+    width: 35px; height: 35px; border-radius: 50%;
+    font-size: 20px; cursor: pointer;
+}
+
+/* STICKY FOOTER (ΚΑΛΑΘΙ) */
+#cartBar {
+    position: fixed; bottom: 10px; left: 10px; right: 10px;
+    background: var(--dark); color: white; border-radius: 15px;
+    padding: 15px; display: flex; justify-content: space-between;
+    align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+    cursor: pointer; display: none; /* Εμφανίζεται μόνο αν έχει προϊόντα */
+}
+
+#cartCount {
+    background: var(--primary); padding: 2px 8px; border-radius: 10px;
+}
+
+/* MODALS (POPUP) */
+.modal {
+    display: none; position: fixed; z-index: 1000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.8); align-items: center;
+}
+
+.modal-content, .checkout-content {
+    background: white; margin: auto; padding: 20px;
+    border-radius: 15px; width: 85%; max-width: 500px;
+    position: relative;
+}
+
+/* ΦΟΡΜΑ ΠΕΛΑΤΗ */
+.customer-info input, .customer-info textarea {
+    width: 100%; margin-bottom: 10px; padding: 10px;
+    border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;
+}
+
+.order-type { margin: 15px 0; display: flex; gap: 20px; }
+
+.btn-send {
+    background: var(--success); color: white; border: none;
+    padding: 15px; width: 100%; border-radius: 10px;
+    font-weight: bold; font-size: 16px;
+}
+
+/* SOLD OUT STYLE */
+.sold-out { opacity: 0.5; grayscale(1); pointer-events: none; }
+.sold-out-tag { color: red; font-size: 10px; display: block; }

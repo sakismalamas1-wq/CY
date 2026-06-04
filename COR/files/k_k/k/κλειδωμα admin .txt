@@ -1,0 +1,22 @@
+στην αρχη μεσα στο scrypt
+
+
+
+
+(function protectAdmin() {
+    const password = "0000"; // <-- Βάλε εδώ τον κωδικό που θέλεις
+    const sessionKey = "admin_authorized";
+
+    // Ελέγχουμε αν έχει ήδη δώσει τον κωδικό σε αυτό το session
+    if (sessionStorage.getItem(sessionKey) !== "true") {
+        let input = prompt("Παρακαλώ εισάγετε τον κωδικό πρόσβασης για το Admin:");
+        
+        if (input === password) {
+            sessionStorage.setItem(sessionKey, "true");
+        } else {
+            alert("Λάθος κωδικός! Πρόσβαση απαγορεύεται.");
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:20%; color:white;'>🔒 Πρόσβαση Απαγορεύεται</h1>";
+            window.stop(); // Σταματάει το φόρτωμα της σελίδας
+        }
+    }
+})();

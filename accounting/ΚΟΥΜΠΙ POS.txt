@@ -1,0 +1,3 @@
+<button onclick="window.open('accounting/index.php')">
+📊 ΛΟΓΙΣΤΗΡΙΟ
+</button>

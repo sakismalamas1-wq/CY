@@ -1,0 +1,75 @@
+async function printToKitchen() {
+    const saved = JSON.parse(localStorage.getItem('gbr_ui_settings') || "{}");
+    const printFS = saved['--print-font-size'] || '22px'; 
+    // ΠΡΑΣΙΝΟ ΣΧΟΛΙΟ: Διαβάζει πόσα αντίγραφα θες από το Admin (αν δεν υπάρχει, βγάζει 1)
+    const copies = parseInt(saved['--print-copies']) || 1; 
+
+    let newItems = currentOrder.filter(it => !it.printed);
+    let oldItems = currentOrder.filter(it => it.printed); 
+    if (newItems.length === 0) return alert("Όλα εκτυπωμένα!");
+
+    let sorted = sortOrderItems([...newItems]);
+    
+    // ΠΡΑΣΙΝΟ ΣΧΟΛΙΟ: Προσθήκη CSS για αυτόματο κόψιμο από τον εκτυπωτή
+    let printContent = `<html><head><style>
+        @media print {
+            .cut-page { page-break-after: always; } 
+            body { margin: 0; padding: 0; }
+        }
+    </style></head><body style="font-family:Arial; width:80mm; padding:0; margin:0;">`;
+    
+    const groups = {
+        "G1": ["ΨΩΜΙ ΠΙΤΑ", "ΟΡΕΚΤΙΚΑ", "ΣΑΛΑΤΕΣ"],
+        "G2": ["ΣΧΑΡΑΣ", "ΤΕΜΑΧΙΑ", "ΣΠΕΣΙΑΛ", "ΜΑΓΕΙΡΕΥΤΑ", "ΘΑΛΑΣΣΙΝΑ"],
+        "G3": ["ΣΑΝΤΟΥΙΤΣ"],
+        "G4": ["ΟΥΖΑ ΤΣΙΠΟΥΡΑ", "ΜΠΥΡΕΣ", "ΚΡΑΣΙΑ ΡΕΤΣΙΝΕΣ", "ΑΝΑΨΥΚΤΙΚΑ", "ΧΡΕΩΣΕΙΣ"]
+    };
+
+    // Φτιάχνουμε το σώμα (Μέσα σε div με κλάση cut-page για να κόβει)
+    let receiptBody = `<div class="cut-page">`;
+    receiptBody += `<br><br><br><br>`;
+    
+    if(oldItems.length > 0) {
+        receiptBody += `<center><h1 style="background:#000; color:#fff; padding:5px; border:2px solid #000;">* ΣΥΜΠΛΗΡΩΜΑ *</h1></center>`;
+    }
+    receiptBody += `<center><h2>${selectedTable}</h2><hr></center>`;
+    
+    let lastCatGroup = "";
+    let counts = {};
+    sorted.forEach(it => { counts[it.n] = (counts[it.n] || 0) + 1; });
+    let uniqueNames = [...new Set(sorted.map(it => it.n))];
+
+    uniqueNames.forEach(name => {
+        let prodInfo = products.find(p => p.name === name.split(' (')[0]);
+        let currentCat = prodInfo ? prodInfo.category : "ΔΙΑΦΟΡΑ";
+        let currentGroup = "";
+        for (let g in groups) { if (groups[g].includes(currentCat)) { currentGroup = g; break; } }
+
+        if (lastCatGroup !== "" && lastCatGroup !== currentGroup) {
+            receiptBody += `<br><br><br><br>`; 
+        }
+
+        receiptBody += `<div style="font-size:${printFS}; font-weight:bold; padding:5px 0; text-decoration:none;">${counts[name]} x ${name}</div>`;
+        lastCatGroup = currentGroup;
+    });
+
+    receiptBody += `<br><br><br><br><br><br>`; // Εξτρα κενό για να προλάβει να βγει το χαρτί πριν το μαχαίρι
+    receiptBody += `</div>`; 
+
+    // ΠΡΑΣΙΝΟ ΣΧΟΛΙΟ: Επαναλαμβάνουμε το σώμα όσες φορές λέει η ρύθμιση
+    for (let i = 0; i < copies; i++) {
+        printContent += receiptBody;
+    }
+
+    printContent += `</body></html>`;
+
+    const win = window.open('', '', 'width=600,height=800');
+    win.document.write(printContent);
+    win.document.write(`<script>window.onload = function() { window.print(); setTimeout(function(){ window.close(); }, 500); };<\/script>`);
+    win.document.close();
+
+    currentOrder.forEach(it => it.printed = true);
+    allTablesData[selectedTable] = [...currentOrder];
+    await save();
+    renderOrder();
+}

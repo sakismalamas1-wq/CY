@@ -1,0 +1,98 @@
+Περίμενε, πριν τα περάσεις όλα, σου ετοίμασα έτοιμα τα δύο αρχεία (sync.php και app.js) για να μην γίνει κάποιο λάθος στο "Copy-Paste" και χάσουμε τον συγχρονισμό που μόλις φτιάξαμε.
+
+1. Το νέο sync.php (Με ενσωματωμένο έλεγχο άδειας)
+Αντικατάστησε όλο το περιεχόμενο του sync.php με αυτό:
+
+PHP
+<?php
+clearstatcache();
+header("Cache-Control: no-cache, must-revalidate");
+header('Content-Type: application/json');
+
+$tablesFile = 'tables_data.json';
+$productsFile = 'menu_data.json'; // Το αρχείο του μενού σου
+$licenseFile = 'license.json';   // Το αρχείο της άδειας
+
+// --- POST (SAVE) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    if ($input) {
+        if (isset($input['tables'])) {
+            file_put_contents($tablesFile, json_encode($input['tables']), LOCK_EX);
+        }
+        if (isset($input['products'])) {
+            file_put_contents($productsFile, json_encode($input['products']), LOCK_EX);
+        }
+        echo json_encode(["status" => "ok"]);
+    }
+} 
+// --- GET (SYNC) ---
+else {
+    $response = [];
+    
+    // ΕΛΕΓΧΟΣ ΑΔΕΙΑΣ
+    $is_expired = false;
+    if (file_exists($licenseFile)) {
+        $lic = json_decode(file_get_contents($licenseFile), true);
+        if (date('Y-m-d') > $lic['expire_date']) {
+            $is_expired = true;
+        }
+    } else {
+        // Αν δεν υπάρχει το αρχείο license.json, το κλειδώνουμε για σιγουριά
+        $is_expired = true; 
+    }
+
+    $response['license_error'] = $is_expired;
+
+    if (!$is_expired) {
+        $response['tables'] = file_exists($tablesFile) ? json_decode(file_get_contents($tablesFile), true) : new stdClass();
+        if (file_exists($productsFile)) {
+            $menuData = json_decode(file_get_contents($productsFile), true);
+            $response['products'] = $menuData;
+            $response['server_products'] = $menuData; 
+        }
+    }
+    
+    echo json_encode($response);
+}
+?>
+2. Η προσθήκη στο app.js
+Στο app.js, βρες τη συνάρτηση fetchSync() και βάλε τον έλεγχο ακριβώς μετά το res.json():
+
+//////////////////////////////////////////////////////////////////////////////
+
+JavaScript
+async function fetchSync() {
+    try {
+        const res = await fetch('sync.php');
+        const data = await res.json();
+        
+        // --- ΕΛΕΓΧΟΣ ΑΔΕΙΑΣ ---
+        if (data.license_error === true) {
+            document.body.innerHTML = `
+                <div style="background:#000; color:#ff4444; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:sans-serif; padding:20px;">
+                    <div style="font-size:80px; margin-bottom:20px;">🔒</div>
+                    <h1 style="text-transform:uppercase; letter-spacing:2px;">Η άδεια χρήσης έληξε</h1>
+                    <p style="color:#888; font-size:18px;">Επικοινωνήστε με τον προγραμματιστή για ανανέωση της συνδρομής σας.</p>
+                </div>`;
+            return;
+        }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        // ... ο υπόλοιπος κώδικας της fetchSync (tablesOnly, products κλπ) ...
+3. Το αρχείο "Κλειδί" (license.json)
+Φτιάξε ένα νέο αρχείο στον ίδιο φάκελο, ονόμασέ το license.json και γράψε μέσα:
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+JSON
+{
+  "expire_date": "2026-06-01"
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Τι να προσέξεις:
+Πρώτα ανέβασε το license.json και μετά το sync.php. Αν ανεβάσεις το sync.php χωρίς το κλειδί, το πρόγραμμα θα κλειδώσει αμέσως (γιατί βάλαμε να κλειδώνει αν το αρχείο λείπει).
+
+Μην ξεχάσεις να βάλεις τον ίδιο έλεγχο και στο pda.html (στη συνάρτηση loadData) για να κλειδώνει και το κινητό του σερβιτόρου!

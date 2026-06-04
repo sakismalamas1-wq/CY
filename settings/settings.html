@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Style Panel - 0000</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #eee; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; display: none; }
+        .login-box { text-align: center; margin-top: 100px; }
+        .card { background: #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 5px solid #159cc2; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #bbb; }
+        input[type="color"] { width: 100%; height: 40px; border: none; cursor: pointer; background: none; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px; background: #333; border: 1px solid #444; color: white; border-radius: 5px; }
+        .btn-save { position: fixed; bottom: 20px; right: 20px; padding: 20px 40px; background: #28a745; color: white; border: none; border-radius: 50px; font-size: 20px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        h3 { margin-top: 0; color: #159cc2; border-bottom: 1px solid #444; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="loginSection" class="login-box">
+        <h1>ΕΙΣΟΔΟΣ ADMIN</h1>
+        <input type="password" id="pinInput" placeholder="Κωδικός" style="font-size: 25px; text-align: center; width: 200px;">
+        <br><br>
+        <button onclick="checkPin()" style="padding: 15px 30px; cursor: pointer;">Είσοδος</button>
+    </div>
+
+    <div id="adminContent" class="container">
+        <h1>Ρυθμίσεις Εμφάνισης</h1>
+
+        <div class="card">
+            <h3>1, 2, 3. Σαλόνι, Delivery, Κουζίνα</h3>
+            <div class="grid">
+                <div><label>Χρώμα Salon</label><input type="color" id="salonBg"></div>
+                <div><label>Γράμματα Salon</label><input type="color" id="salonFont"></div>
+                <div><label>Χρώμα Delivery</label><input type="color" id="deliveryBg"></div>
+                <div><label>Γράμματα Delivery</label><input type="color" id="deliveryFont"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>4, 5. Σύνολο & Ακύρωση</h3>
+            <div class="grid">
+                <div><label>Σύνολο (Background)</label><input type="color" id="totalBg"></div>
+                <div><label>Ακύρωση (Background)</label><input type="color" id="cancelBg"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>6, 7, 8. Τραπέζια & Εικόνες Μενού/Φαγητών</h3>
+            <div class="grid">
+                <div><label>Χρώμα Τραπεζιών</label><input type="color" id="tableBg"></div>
+                <div><label>Εικόνα Μενού (π.χ. ΣΑΛΑΤΕΣ.png)</label><input type="text" id="menuImg"></div>
+                <div><label>Εικόνα Φαγητών (π.χ. ΨΩΜΙ.png)</label><input type="text" id="foodImg"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>9, 10. Γενικά & Background</h3>
+            <div class="grid">
+                <div><label>Χρώμα Total (9)</label><input type="color" id="totalFontColor"></div>
+                <div><label>Φόντο Σελίδας (Χρώμα)</label><input type="color" id="bgPageColor"></div>
+                <div style="grid-column: span 2;">
+                    <label>Εικόνα Φόντου (Όνομα αρχείου)</label>
+                    <input type="text" id="bgPageImg" placeholder="bg.jpg">
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-save" onclick="saveAll()">ΑΠΟΘΗΚΕΥΣΗ</button>
+    </div>
+
+    <script>
+        function checkPin() {
+            if(document.getElementById('pinInput').value === '0000') {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                loadSettings();
+            } else { alert("Λάθος κωδικός!"); }
+        }
+
+        async function loadSettings() {
+            const res = await fetch('settings.json');
+            const s = await res.json();
+            
+            // Φόρτωμα τιμών στα inputs
+            document.getElementById('salonBg').value = s.salonBtn?.bg || "#159cc2";
+            document.getElementById('totalFontColor').value = s.totalFontColor || "#ff0000";
+            // ... (εδώ θα μπουν και τα υπόλοιπα ids)
+        }
+
+        async function saveAll() {
+            const settings = {
+                salonBtn: { bg: document.getElementById('salonBg').value, font: document.getElementById('salonFont').value },
+                totalFontColor: document.getElementById('totalFontColor').value,
+                background: { color: document.getElementById('bgPageColor').value, img: document.getElementById('bgPageImg').value },
+                // ... (μαζεύουμε όλα τα πεδία)
+            };
+
+            const response = await fetch('save_settings.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settings)
+            });
+
+            if(response.ok) alert("Οι αλλαγές σώθηκαν! Κάνε ανανέωση στο POS.");
+        }
+    </script>
+</body>
+</html>

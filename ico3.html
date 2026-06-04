@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Προβολή Εικόνας</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+        }
+
+        .image-container {
+            max-width: 90%;
+            max-height: 80vh;
+            text-align: center;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 75vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-back {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #ff0000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="image-container">
+        <!-- Εικόνα από τον φάκελο του XAMPP -->
+        <img src="/w2/4.png" alt="Μεγάλη Εικόνα">
+    </div>
+
+    <!-- Το κουμπί επιστροφής στο POS -->
+    <button class="btn-back" onclick="window.location.href='index.html'">⬅ ΕΠΙΣΤΡΟΦΗ ΣΤΟ POS</button>
+
+</body>
+</html>

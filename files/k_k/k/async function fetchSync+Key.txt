@@ -1,0 +1,71 @@
+async function fetchSync() {
+    try {
+        const res = await fetch('sync.php');
+        const data = await res.json();
+        
+        // --- 1. ΕΛΕΓΧΟΣ ΑΔΕΙΑΣ (ΚΛΕΙΔΩΜΑ) ---
+        if (data.license_error === true) {
+            document.body.innerHTML = `
+                <div style="background:#000; color:#ff4444; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:sans-serif; padding:20px;">
+                    <div style="font-size:80px; margin-bottom:20px;">🔒</div>
+                    <h1 style="text-transform:uppercase; letter-spacing:2px; margin:0;">Η άδεια χρήσης έληξε</h1>
+                    <p style="color:#888; font-size:18px; margin-top:15px;">Επικοινωνήστε με τον προγραμματιστή για ανανέωση της συνδρομής σας.</p>
+                </div>`;
+            return; // Σταματάει εδώ, δεν εκτελεί τίποτα άλλο
+        }
+
+        // 2. ΔΙΑΒΑΣΜΑ ΤΡΑΠΕΖΙΩΝ
+        let incomingTables = data.tables || {};
+        
+        // 3. ΕΝΗΜΕΡΩΣΗ ΠΡΟΪΟΝΤΩΝ
+        if (data.products) {
+            localStorage.setItem('roxani_products', JSON.stringify(data.products));
+            products = data.products;
+        }
+
+        // Σιγουρευόμαστε ότι κάθε τραπέζι είναι Array
+        let tablesOnly = {};
+        for (let key in incomingTables) {
+            tablesOnly[key] = Array.isArray(incomingTables[key]) ? incomingTables[key] : [];
+        }
+
+        // 4. ΔΙΑΧΕΙΡΙΣΗ PRINTED STATUS (Για να μην χάνονται τα χρώματα)
+        for (let table in tablesOnly) {
+            if (allTablesData[table] && Array.isArray(allTablesData[table])) {
+                let localPrinted = allTablesData[table]
+                    .filter(it => it && it.printed)
+                    .map(it => it.n);
+
+                tablesOnly[table] = tablesOnly[table].map(newItem => {
+                    if (localPrinted.includes(newItem.n)) {
+                        localPrinted.splice(localPrinted.indexOf(newItem.n), 1);
+                        return { ...newItem, printed: true };
+                    }
+                    return newItem;
+                });
+            }
+        }
+
+        allTablesData = tablesOnly;
+        renderTables(); // Ενημέρωση χρωμάτων στα τραπέζια
+        
+        if (selectedTable && !isWriting) {
+            currentOrder = [...(allTablesData[selectedTable] || [])];
+            renderOrder();
+        }
+
+        // 5. ΗΧΟΣ (Bell)
+        let currentTotal = 0;
+        for (let t in tablesOnly) {
+            currentTotal += tablesOnly[t].filter(it => !it.printed).length;
+        }
+        
+        if (currentTotal > lastTotalItems) {
+            new Audio('bell.wav').play().catch(e => {});
+        }
+        lastTotalItems = currentTotal;
+
+    } catch(e) { 
+        console.error("Sync failed details:", e); 
+    }
+}

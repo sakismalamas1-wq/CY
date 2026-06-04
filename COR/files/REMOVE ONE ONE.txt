@@ -1,0 +1,15 @@
+async function removeOne(name) {
+    lockUI();
+
+    // βρίσκουμε το πρώτο ίδιο προϊόν
+    let index = currentOrder.findIndex(it => it.n === name);
+
+    if (index !== -1) {
+        currentOrder.splice(index, 1);
+    }
+
+    allTablesData[selectedTable] = [...currentOrder];
+
+    renderOrder();
+    await save();
+}
